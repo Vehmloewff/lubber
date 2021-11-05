@@ -1,9 +1,7 @@
-import { gui, render } from './mod.ts'
-import { Text } from './Text.ts'
-import { Div } from './Div.ts'
+import { lubber, render, Text, Div } from '../mod.ts'
 
 function App() {
-	const { $, template, setState } = gui()
+	const { $, template, setState } = lubber()
 
 	let showCounter = true
 
@@ -23,11 +21,18 @@ function App() {
 }
 
 function Counter() {
-	const { $, template, setState, onDestroy } = gui()
+	const { $, template, setState, onDestroy } = lubber()
 	let count = 0
 
-	const interval = setInterval(() => setState(() => count++), 1000)
-	onDestroy(() => clearInterval(interval))
+	const interval = setInterval(() => {
+		console.log('hi')
+		setState(() => count++)
+	}, 1000)
+
+	onDestroy(async () => {
+		await new Promise(resolve => setTimeout(resolve, 3000))
+		clearInterval(interval)
+	})
 
 	template(() => Text(`Hello, World! ${count}`))
 

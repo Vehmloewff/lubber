@@ -1,4 +1,4 @@
-import { Component } from './mod.ts'
+import { Component } from '../mod.ts'
 
 export function Text(text: string): Component {
 	let stashedEl: HTMLSpanElement | null = null

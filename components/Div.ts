@@ -1,4 +1,4 @@
-import { Component } from './mod.ts'
+import { ComponentInternals, Component } from '../mod.ts'
 
 export interface DivParams {
 	style?: Partial<CSSStyleDeclaration>
@@ -108,55 +108,62 @@ export interface EventHandlers {
 	fullscreenerror: (eventData: Event) => unknown
 }
 
-export function Div(params: DivParams): Component {
+export function Div(params: DivParams) {
 	let stashedEl: HTMLDivElement | null = null
 
-	return {
-		$: {
-			async mount(el) {
-				const div = document.createElement('div')
-				stashedEl = div
+	const $: ComponentInternals = {
+		async mount(el, context) {
+			const div = document.createElement('div')
+			stashedEl = div
 
-				if (params.on)
-					for (const eventName in params.on) {
-						const value = params.on[eventName as keyof EventHandlers]
+			if (params.on)
+				for (const eventName in params.on) {
+					const value = params.on[eventName as keyof EventHandlers]
 
-						// @ts-ignore params don't line up correctly for some reason
-						if (value) div.addEventListener(eventName, value)
-					}
+					// @ts-ignore params don't line up correctly for some reason
+					if (value) div.addEventListener(eventName, value)
+				}
 
-				if (params.style)
-					for (const key in params.style) {
-						const value = params.style[key]
+			if (params.style)
+				for (const key in params.style) {
+					const value = params.style[key]
 
-						if (value) div.style[key] = value
-					}
+					if (value) div.style[key] = value
+				}
 
-				el.appendChild(div)
+			el.appendChild(div)
 
-				if (params.children)
-					for (const child of params.children) {
-						await child.$.mount(div)
-					}
-			},
-			async destroy() {
-				if (!stashedEl) throw new Error('destroy was called before mount')
-
-				if (params.on)
-					for (const eventName in params.on) {
-						const value = params.on[eventName as keyof EventHandlers]
-
-						// @ts-ignore params don't line up correctly for some reason
-						stashedEl.removeEventListener(eventName, value)
-					}
-
-				if (params.children)
-					for (const child of params.children) {
-						await child.$.destroy()
-					}
-
-				stashedEl?.remove()
-			},
+			if (params.children)
+				for (const child of params.children) {
+					await child.$.mount(div, context)
+				}
 		},
+		async destroy() {
+			if (!stashedEl) throw new Error('destroy was called before mount')
+
+			if (params.on)
+				for (const eventName in params.on) {
+					const value = params.on[eventName as keyof EventHandlers]
+
+					// @ts-ignore params don't line up correctly for some reason
+					stashedEl.removeEventListener(eventName, value)
+				}
+
+			if (params.children)
+				for (const child of params.children) {
+					await child.$.destroy()
+				}
+
+			stashedEl?.remove()
+			stashedEl = null
+		},
+	}
+
+	return {
+		getDomElement() {
+			if (!stashedEl) throw new Error('can not get dom element before it is mounted or after it is destroyed')
+			return stashedEl
+		},
+		$,
 	}
 }
