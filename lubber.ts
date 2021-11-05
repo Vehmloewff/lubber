@@ -6,9 +6,17 @@ export interface Component {
 	$: ComponentInternals
 }
 
+export interface Layout {
+	x: number
+	y: number
+	width: number
+	height: number
+}
+
 export interface ComponentInternals {
-	mount(parentElement: HTMLElement, parentContext: Context): Promise<void>
+	mount(parentElement: HTMLElement, layout: Layout, parentContext: Context): Promise<void>
 	destroy(): Promise<void>
+	preferredSize(parentContext: Context): { width: number | null; height: number | null }
 }
 
 export function lubber() {
@@ -16,13 +24,30 @@ export function lubber() {
 	let stashedTemplate: null | ((context: Context) => Component) = null
 	let stashedParentElement: null | HTMLElement = null
 	let stashedDestroyHook: null | (() => Promise<void>) = null
+	let stashedLayout: null | Layout = null
+	let preStashedTemplateResult: null | Component = null
+
+	const runTemplate = (templateMaker: () => Component) => {
+		if (preStashedTemplateResult) {
+			const p = preStashedTemplateResult
+			preStashedTemplateResult = null
+			return p
+		}
+
+		return templateMaker()
+	}
 
 	const render = async () => {
-		if (!stashedParentElement || !thisContext) return console.warn('setState was called before component was mounted')
-		if (!stashedTemplate) return console.warn('setState was called before "template"')
+		if (!stashedParentElement || !thisContext || !stashedLayout) return console.warn('setState was called before component was mounted')
+		if (!stashedTemplate) return console.warn('"template" was not called or called too late')
 
-		const temp = stashedTemplate(thisContext)
-		await temp.$.mount(stashedParentElement, thisContext)
+		const temp = runTemplate(() => {
+			if (!stashedTemplate || !thisContext) throw new Error('something wrong happened')
+
+			return stashedTemplate(thisContext)
+		})
+
+		await temp.$.mount(stashedParentElement, stashedLayout, thisContext)
 
 		stashedDestroyHook = temp.$.destroy
 	}
@@ -61,11 +86,11 @@ export function lubber() {
 	}
 
 	const $: ComponentInternals = {
-		async mount(parentElement, parentContext) {
+		async mount(parentElement, layout) {
 			if (userDefinedStashedBeforeMountHook) await userDefinedStashedBeforeMountHook()
 
 			stashedParentElement = parentElement
-			thisContext = makeContext(parentContext)
+			stashedLayout = layout
 
 			await render()
 
@@ -74,11 +99,36 @@ export function lubber() {
 		async destroy() {
 			if (userDefinedStashedDestroyHook) await userDefinedStashedDestroyHook()
 		},
+		preferredSize(parentContext) {
+			if (!stashedTemplate) throw new Error('"template" was not called')
+
+			thisContext = makeContext(parentContext)
+			preStashedTemplateResult = stashedTemplate(thisContext)
+
+			return preStashedTemplateResult.$.preferredSize(thisContext)
+		},
 	}
 
 	return { template, $, setState, onDestroy, beforeMount, afterMount }
 }
 
-export function render(rootComponent: Component) {
-	rootComponent.$.mount(document.body, makeContext())
+export async function render(rootComponent: Component, rootElement = document.body) {
+	const context = makeContext()
+
+	rootElement.style.position = 'fixed'
+	rootElement.style.top = '0'
+	rootElement.style.right = '0'
+	rootElement.style.bottom = '0'
+	rootElement.style.left = '0'
+	rootElement.style.margin = '0'
+	rootElement.style.padding = '0'
+
+	const rootLayout: Layout = {
+		x: 0,
+		y: 0,
+		width: rootElement.clientWidth,
+		height: rootElement.clientHeight,
+	}
+
+	await rootComponent.$.mount(rootElement, rootLayout, context)
 }

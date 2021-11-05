@@ -20,11 +20,24 @@ function lubber() {
     let stashedTemplate = null;
     let stashedParentElement = null;
     let stashedDestroyHook = null;
+    let stashedLayout = null;
+    let preStashedTemplateResult = null;
+    const runTemplate = (templateMaker)=>{
+        if (preStashedTemplateResult) {
+            const p = preStashedTemplateResult;
+            preStashedTemplateResult = null;
+            return p;
+        }
+        return templateMaker();
+    };
     const render = async ()=>{
-        if (!stashedParentElement || !thisContext) return console.warn('setState was called before component was mounted');
-        if (!stashedTemplate) return console.warn('setState was called before "template"');
-        const temp = stashedTemplate(thisContext);
-        await temp.$.mount(stashedParentElement, thisContext);
+        if (!stashedParentElement || !thisContext || !stashedLayout) return console.warn('setState was called before component was mounted');
+        if (!stashedTemplate) return console.warn('"template" was not called or called too late');
+        const temp = runTemplate(()=>{
+            if (!stashedTemplate || !thisContext) throw new Error('something wrong happened');
+            return stashedTemplate(thisContext);
+        });
+        await temp.$.mount(stashedParentElement, stashedLayout, thisContext);
         stashedDestroyHook = temp.$.destroy;
     };
     function template(tmp) {
@@ -54,15 +67,21 @@ function lubber() {
         };
     }
     const $ = {
-        async mount (parentElement, parentContext) {
+        async mount (parentElement, layout) {
             if (userDefinedStashedBeforeMountHook) await userDefinedStashedBeforeMountHook();
             stashedParentElement = parentElement;
-            thisContext = makeContext(parentContext);
+            stashedLayout = layout;
             await render();
             if (userDefinedStashedAfterMountHook) userDefinedStashedAfterMountHook();
         },
         async destroy () {
             if (userDefinedStashedDestroyHook) await userDefinedStashedDestroyHook();
+        },
+        preferredSize (parentContext) {
+            if (!stashedTemplate) throw new Error('"template" was not called');
+            thisContext = makeContext(parentContext);
+            preStashedTemplateResult = stashedTemplate(thisContext);
+            return preStashedTemplateResult.$.preferredSize(thisContext);
         }
     };
     return {
@@ -74,8 +93,22 @@ function lubber() {
         afterMount
     };
 }
-function render(rootComponent) {
-    rootComponent.$.mount(document.body, makeContext());
+async function render(rootComponent, rootElement = document.body) {
+    const context = makeContext();
+    rootElement.style.position = 'fixed';
+    rootElement.style.top = '0';
+    rootElement.style.right = '0';
+    rootElement.style.bottom = '0';
+    rootElement.style.left = '0';
+    rootElement.style.margin = '0';
+    rootElement.style.padding = '0';
+    const rootLayout = {
+        x: 0,
+        y: 0,
+        width: rootElement.clientWidth,
+        height: rootElement.clientHeight
+    };
+    await rootComponent.$.mount(rootElement, rootLayout, context);
 }
 function Div(params) {
     let stashedEl = null;
