@@ -1,42 +1,35 @@
-import { lubber, render, Text, Div } from '../mod.ts'
+import { widget, Text, StyledBox, createLubberApplication, SizedBox } from '../mod.ts'
 
 function App() {
-	const { $, template, setState } = lubber()
+	const { $, build } = widget()
 
-	let showCounter = true
-
-	template(() =>
-		Div({
-			children: showCounter ? [Counter()] : [],
-			style: { width: '100px', height: '100px', background: 'red' },
-			on: {
-				click() {
-					setState(() => (showCounter = !showCounter))
-				},
-			},
+	build(() =>
+		StyledBox({
+			child: SizedBox({ child: Text('Hello, World!') }),
+			color: 'red',
 		})
 	)
 
 	return { $ }
 }
 
-function Counter() {
-	const { $, template, setState, onDestroy } = lubber()
-	let count = 0
+// function Counter() {
+// 	const { $, template, setState, onDestroy } = lubber()
+// 	let count = 0
 
-	const interval = setInterval(() => {
-		console.log('hi')
-		setState(() => count++)
-	}, 1000)
+// 	const interval = setInterval(() => {
+// 		console.log('hi')
+// 		setState(() => count++)
+// 	}, 1000)
 
-	onDestroy(async () => {
-		await new Promise(resolve => setTimeout(resolve, 3000))
-		clearInterval(interval)
-	})
+// 	onDestroy(async () => {
+// 		await new Promise(resolve => setTimeout(resolve, 3000))
+// 		clearInterval(interval)
+// 	})
 
-	template(() => Text(`Hello, World! ${count}`))
+// 	template(() => Text(`Hello, World! ${count}`))
 
-	return { $ }
-}
+// 	return { $ }
+// }
 
-render(App())
+createLubberApplication({ rootWidget: App() })
