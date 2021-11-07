@@ -1,7 +1,7 @@
 import { BoxCorners, BoxSides } from './types.ts'
 import { Widget } from '../mod.ts'
 import { elementWidget } from '../element-widget.ts'
-import { carelessChildMount } from '../utils.ts'
+import { carelessMounter } from '../utils.ts'
 
 export interface BorderStyle {
 	color: string
@@ -50,64 +50,73 @@ const getSumYBorders = (borders: StyledBoxParams['border']) => {
 }
 
 export function StyledBox(params: StyledBoxParams = {}) {
-	return elementWidget<HTMLDivElement>('div', ({ getChildPreferredSize }) => ({
-		async mount({ element, layout, mountChild }) {
-			const trueWidth = layout.width - getSumXBorders(params.border)
-			const trueHeight = layout.height - getSumYBorders(params.border)
+	return elementWidget<HTMLDivElement>('div', async ({ getChildPreferredSize }) => {
+		const { carelessMountChild, preferredSize } = await carelessMounter(getChildPreferredSize, params.child)
 
-			if (trueWidth < 0)
-				throw new Error('borders are too wide in the X direction.  They took up all the space available and are asking for more')
-			if (trueHeight < 0)
-				throw new Error('borders are too wide in the Y direction.  They took up all the space available and are asking for more')
+		return {
+			async mount({ element, layout, mountChild }) {
+				const trueWidth = layout.width - getSumXBorders(params.border)
+				const trueHeight = layout.height - getSumYBorders(params.border)
 
-			element.style.position = 'absolute'
-			element.style.width = `${trueWidth}px`
-			element.style.height = `${trueHeight}px`
-			element.style.left = `${layout.x}px`
-			element.style.top = `${layout.y}px`
+				if (trueWidth < 0)
+					throw new Error(
+						'borders are too wide in the X direction.  They took up all the space available and are asking for more'
+					)
+				if (trueHeight < 0)
+					throw new Error(
+						'borders are too wide in the Y direction.  They took up all the space available and are asking for more'
+					)
 
-			const stringifyBorder = (border: BorderStyle) => `${border.width}px ${border.style} ${border.color}`
+				element.style.position = 'absolute'
+				element.style.width = `${trueWidth}px`
+				element.style.height = `${trueHeight}px`
+				element.style.left = `${layout.x}px`
+				element.style.top = `${layout.y}px`
 
-			if (params.border) {
-				if ((params.border as BorderStyle).color) element.style.border = stringifyBorder(params.border as BorderStyle)
-				else {
-					const borders = params.border as Partial<BoxSides<BorderStyle>>
+				const stringifyBorder = (border: BorderStyle) => `${border.width}px ${border.style} ${border.color}`
 
-					if (borders.right) element.style.borderRight = stringifyBorder(borders.right)
-					if (borders.left) element.style.borderLeft = stringifyBorder(borders.left)
-					if (borders.bottom) element.style.borderBottom = stringifyBorder(borders.bottom)
-					if (borders.top) element.style.borderTop = stringifyBorder(borders.top)
+				if (params.borderRadius) {
+					if (typeof params.borderRadius === 'number') element.style.borderRadius = `${params.borderRadius}`
+					else {
+						if (params.borderRadius.topLeft) element.style.borderTopLeftRadius = `${params.borderRadius.topLeft}`
+						if (params.borderRadius.topRight) element.style.borderTopRightRadius = `${params.borderRadius.topRight}`
+						if (params.borderRadius.bottomLeft) element.style.borderBottomLeftRadius = `${params.borderRadius.bottomLeft}`
+						if (params.borderRadius.bottomRight) element.style.borderBottomRightRadius = `${params.borderRadius.bottomRight}`
+					}
 				}
-			}
 
-			if (params.color) element.style.background = params.color
-			else if (params.gradient) element.style.background = params.gradient
+				if (params.border) {
+					if ((params.border as BorderStyle).color) element.style.border = stringifyBorder(params.border as BorderStyle)
+					else {
+						const borders = params.border as Partial<BoxSides<BorderStyle>>
 
-			if (params.boxShadow)
-				element.style.boxShadow = `${params.boxShadow.x}px ${params.boxShadow.y}px ${params.boxShadow.blur} ${params.boxShadow.spread} ${params.boxShadow.color}`
+						if (borders.right) element.style.borderRight = stringifyBorder(borders.right)
+						if (borders.left) element.style.borderLeft = stringifyBorder(borders.left)
+						if (borders.bottom) element.style.borderBottom = stringifyBorder(borders.bottom)
+						if (borders.top) element.style.borderTop = stringifyBorder(borders.top)
+					}
+				}
 
-			if (params.opacity) element.style.opacity = `${params.opacity}`
+				if (params.color) element.style.background = params.color
+				else if (params.gradient) element.style.background = params.gradient
 
-			if (params.invisible) element.style.visibility = 'hidden'
+				if (params.boxShadow)
+					element.style.boxShadow = `${params.boxShadow.x}px ${params.boxShadow.y}px ${params.boxShadow.blur} ${params.boxShadow.spread} ${params.boxShadow.color}`
 
-			if (params.transform) element.style.transform = params.transform
-			if (params.filter) element.style.filter = params.filter
+				if (params.opacity) element.style.opacity = `${params.opacity}`
 
-			// I guess TS doesn't recognize backdropFilter yet
-			// deno-lint-ignore no-explicit-any
-			if (params.backdropFilter) (element.style as any).backdropFilter = params.backdropFilter
+				if (params.invisible) element.style.visibility = 'hidden'
 
-			if (params.child)
-				await carelessChildMount({
-					child: params.child,
-					getChildPreferredSize,
-					layout: { x: 0, y: 0, width: trueWidth, height: trueHeight },
-					mountChild,
-				})
-		},
-		preferredSize: {
-			width: null,
-			height: null,
-		},
-	}))
+				if (params.transform) element.style.transform = params.transform
+				if (params.filter) element.style.filter = params.filter
+
+				// I guess TS doesn't recognize backdropFilter yet
+				// deno-lint-ignore no-explicit-any
+				if (params.backdropFilter) (element.style as any).backdropFilter = params.backdropFilter
+
+				await carelessMountChild(mountChild, { x: 0, y: 0, width: trueWidth, height: trueHeight })
+			},
+			preferredSize,
+		}
+	})
 }

@@ -1,12 +1,14 @@
-import { widget, Text, StyledBox, createLubberApplication, SizedBox } from '../mod.ts'
+import { widget, Text, StyledBox, createLubberApplication, SizedBox, Padding } from '../mod.ts'
 
 function App() {
 	const { $, build } = widget()
 
 	build(() =>
-		StyledBox({
-			child: SizedBox({ child: Text('Hello, World!') }),
-			color: 'red',
+		SizedBox({
+			child: StyledBox({
+				color: 'red',
+				child: Padding({ padding: 10, child: StyledBox({ color: 'green', child: Text('Hello, World!') }) }),
+			}),
 		})
 	)
 

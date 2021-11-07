@@ -24,8 +24,19 @@ export function SizedBox(params: SizedBoxParams = {}) {
 
 				if (params.child)
 					await mountChild(params.child, {
-						width: childPreferredSize.width ?? layout.width,
-						height: childPreferredSize.height ?? layout.height,
+						width:
+							childPreferredSize.width !== null
+								? childPreferredSize.width <= layout.width
+									? childPreferredSize.width
+									: layout.width
+								: layout.width,
+						height:
+							childPreferredSize.height !== null
+								? childPreferredSize.height <= layout.height
+									? childPreferredSize.height
+									: layout.height
+								: layout.height,
+
 						x: 0,
 						y: 0,
 					})

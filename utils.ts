@@ -1,4 +1,6 @@
-import { Layout, Widget, FixedSize } from './types.ts'
+/// <reference lib="dom" />
+
+import { Layout, Widget, Size } from './types.ts'
 import { ElementWidgetInitializeMountParams, ElementWidgetInitializeParams } from './element-widget.ts'
 
 export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
@@ -13,36 +15,51 @@ export function setPosition(element: HTMLElement, layout: Layout) {
 	element.style.top = `${layout.y}px`
 }
 
-export interface CarelessChildMountParams {
-	mountChild: ElementWidgetInitializeMountParams<HTMLElement>['mountChild']
-	getChildPreferredSize: ElementWidgetInitializeParams['getChildPreferredSize']
-	layout: Layout
-	child: Widget
+export interface CarelessMounterResult {
+	carelessMountChild(mountChild: ElementWidgetInitializeMountParams<HTMLElement>['mountChild'], layout: Layout): Promise<void>
+	preferredSize: Size
 }
 
-export async function carelessChildMount(params: CarelessChildMountParams) {
-	const childPreferredSize = await params.getChildPreferredSize(params.child)
-	const childSize: FixedSize = {
-		width: childPreferredSize.width
-			? childPreferredSize.width >= params.layout.width
-				? childPreferredSize.width
-				: params.layout.width
-			: params.layout.width,
-		height: childPreferredSize.height
-			? childPreferredSize.height >= params.layout.height
-				? childPreferredSize.height
-				: params.layout.height
-			: params.layout.height,
+export async function carelessMounter(
+	getChildPreferredSize: ElementWidgetInitializeParams['getChildPreferredSize'],
+	child?: Widget
+): Promise<CarelessMounterResult> {
+	if (!child) {
+		return {
+			carelessMountChild() {
+				return Promise.resolve()
+			},
+			preferredSize: { width: null, height: null },
+		}
 	}
 
-	const childLayout: Layout = {
-		x: 0,
-		y: 0,
-		width: childSize.width,
-		height: childSize.height,
+	const childPreferredSize = await getChildPreferredSize(child)
+
+	async function carelessMountChild(mountChild: ElementWidgetInitializeMountParams<HTMLElement>['mountChild'], layout: Layout) {
+		if (!child) throw new Error('something went wrong')
+
+		await mountChild(child, {
+			width:
+				childPreferredSize.width !== null
+					? childPreferredSize.width <= layout.width
+						? childPreferredSize.width
+						: layout.width
+					: layout.width,
+			height:
+				childPreferredSize.height !== null
+					? childPreferredSize.height <= layout.height
+						? childPreferredSize.height
+						: layout.height
+					: layout.height,
+			x: layout.x,
+			y: layout.y,
+		})
 	}
 
-	await params.mountChild(params.child, childLayout)
+	return {
+		carelessMountChild,
+		preferredSize: childPreferredSize,
+	}
 }
 
 export function repeat(text: string, number: number) {

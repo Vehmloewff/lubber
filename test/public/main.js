@@ -5,19 +5,32 @@ function setPosition(element, layout) {
     element.style.left = `${layout.x}px`;
     element.style.top = `${layout.y}px`;
 }
-async function carelessChildMount(params) {
-    const childPreferredSize = await params.getChildPreferredSize(params.child);
-    const childSize = {
-        width: childPreferredSize.width ? childPreferredSize.width >= params.layout.width ? childPreferredSize.width : params.layout.width : params.layout.width,
-        height: childPreferredSize.height ? childPreferredSize.height >= params.layout.height ? childPreferredSize.height : params.layout.height : params.layout.height
+async function carelessMounter(getChildPreferredSize, child) {
+    if (!child) {
+        return {
+            carelessMountChild () {
+                return Promise.resolve();
+            },
+            preferredSize: {
+                width: null,
+                height: null
+            }
+        };
+    }
+    const childPreferredSize = await getChildPreferredSize(child);
+    async function carelessMountChild(mountChild, layout) {
+        if (!child) throw new Error('something went wrong');
+        await mountChild(child, {
+            width: childPreferredSize.width !== null ? childPreferredSize.width <= layout.width ? childPreferredSize.width : layout.width : layout.width,
+            height: childPreferredSize.height !== null ? childPreferredSize.height <= layout.height ? childPreferredSize.height : layout.height : layout.height,
+            x: layout.x,
+            y: layout.y
+        });
+    }
+    return {
+        carelessMountChild,
+        preferredSize: childPreferredSize
     };
-    const childLayout = {
-        x: 0,
-        y: 0,
-        width: childSize.width,
-        height: childSize.height
-    };
-    await params.mountChild(params.child, childLayout);
 }
 function repeat(text, number) {
     let newText = '';
@@ -112,6 +125,41 @@ function elementWidget(type, initialize) {
         }
     };
 }
+const getSumX = (box)=>{
+    if (box === undefined) return 0;
+    if (typeof box === 'number') return box * 2;
+    return (box.left ?? 0) + (box.right ?? 0);
+};
+const getSumY = (box)=>{
+    if (box === undefined) return 0;
+    if (typeof box === 'number') return box * 2;
+    return (box.top ?? 0) + (box.bottom ?? 0);
+};
+function Padding(params = {
+}) {
+    return elementWidget('div', async ({ getChildPreferredSize  })=>{
+        const { carelessMountChild , preferredSize  } = await carelessMounter(getChildPreferredSize, params.child);
+        const sumX = getSumX(params.padding);
+        const sumY = getSumY(params.padding);
+        console.log(preferredSize.width, preferredSize.width !== null ? preferredSize.width + sumX : null);
+        return {
+            mount ({ mountChild , layout  }) {
+                const padding = params.padding ?? 0;
+                console.log(padding, layout.x + (typeof padding === 'number' ? padding / 2 : padding.left ?? 0));
+                return carelessMountChild(mountChild, {
+                    x: layout.x + (typeof padding === 'number' ? padding : padding.left ?? 0),
+                    y: layout.y + (typeof padding === 'number' ? padding : padding.top ?? 0),
+                    width: layout.width - sumX,
+                    height: layout.height - sumY
+                });
+            },
+            preferredSize: {
+                width: preferredSize.width !== null ? preferredSize.width + sumX : null,
+                height: preferredSize.height !== null ? preferredSize.height + sumY : null
+            }
+        };
+    });
+}
 function SizedBox(params = {
 }) {
     return elementWidget('div', async ({ getChildPreferredSize  })=>{
@@ -127,8 +175,8 @@ function SizedBox(params = {
             async mount ({ element , layout , mountChild  }) {
                 setPosition(element, layout);
                 if (params.child) await mountChild(params.child, {
-                    width: childPreferredSize.width ?? layout.width,
-                    height: childPreferredSize.height ?? layout.height,
+                    width: childPreferredSize.width !== null ? childPreferredSize.width <= layout.width ? childPreferredSize.width : layout.width : layout.width,
+                    height: childPreferredSize.height !== null ? childPreferredSize.height <= layout.height ? childPreferredSize.height : layout.height : layout.height,
                     x: 0,
                     y: 0
                 });
@@ -175,7 +223,9 @@ const getSumYBorders = (borders)=>{
 };
 function StyledBox(params = {
 }) {
-    return elementWidget('div', ({ getChildPreferredSize  })=>({
+    return elementWidget('div', async ({ getChildPreferredSize  })=>{
+        const { carelessMountChild , preferredSize  } = await carelessMounter(getChildPreferredSize, params.child);
+        return {
             async mount ({ element , layout , mountChild  }) {
                 const trueWidth = layout.width - getSumXBorders(params.border);
                 const trueHeight = layout.height - getSumYBorders(params.border);
@@ -188,6 +238,15 @@ function StyledBox(params = {
                 element.style.top = `${layout.y}px`;
                 const stringifyBorder = (border)=>`${border.width}px ${border.style} ${border.color}`
                 ;
+                if (params.borderRadius) {
+                    if (typeof params.borderRadius === 'number') element.style.borderRadius = `${params.borderRadius}`;
+                    else {
+                        if (params.borderRadius.topLeft) element.style.borderTopLeftRadius = `${params.borderRadius.topLeft}`;
+                        if (params.borderRadius.topRight) element.style.borderTopRightRadius = `${params.borderRadius.topRight}`;
+                        if (params.borderRadius.bottomLeft) element.style.borderBottomLeftRadius = `${params.borderRadius.bottomLeft}`;
+                        if (params.borderRadius.bottomRight) element.style.borderBottomRightRadius = `${params.borderRadius.bottomRight}`;
+                    }
+                }
                 if (params.border) {
                     if (params.border.color) element.style.border = stringifyBorder(params.border);
                     else {
@@ -206,24 +265,16 @@ function StyledBox(params = {
                 if (params.transform) element.style.transform = params.transform;
                 if (params.filter) element.style.filter = params.filter;
                 if (params.backdropFilter) element.style.backdropFilter = params.backdropFilter;
-                if (params.child) await carelessChildMount({
-                    child: params.child,
-                    getChildPreferredSize,
-                    layout: {
-                        x: 0,
-                        y: 0,
-                        width: trueWidth,
-                        height: trueHeight
-                    },
-                    mountChild
+                await carelessMountChild(mountChild, {
+                    x: 0,
+                    y: 0,
+                    width: trueWidth,
+                    height: trueHeight
                 });
             },
-            preferredSize: {
-                width: null,
-                height: null
-            }
-        })
-    );
+            preferredSize
+        };
+    });
 }
 function Text(text, params = {
 }) {
@@ -350,11 +401,17 @@ function widget() {
 }
 function App() {
     const { $ , build  } = widget();
-    build(()=>StyledBox({
-            child: SizedBox({
-                child: Text('Hello, World!')
-            }),
-            color: 'red'
+    build(()=>SizedBox({
+            child: StyledBox({
+                color: 'red',
+                child: Padding({
+                    padding: 10,
+                    child: StyledBox({
+                        color: 'green',
+                        child: Text('Hello, World!')
+                    })
+                })
+            })
         })
     );
     return {
