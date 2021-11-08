@@ -2,7 +2,7 @@ import { Size, FlexSystemParams, FixedSize } from '../mod.ts'
 import { elementWidget } from '../element-widget.ts'
 import { setPosition } from '../utils.ts'
 
-export function Row(params: FlexSystemParams) {
+export function Column(params: FlexSystemParams) {
 	return elementWidget('div', async ({ getChildPreferredSize }) => {
 		const childrenPreferredSizes: Size[] = []
 
@@ -10,8 +10,8 @@ export function Row(params: FlexSystemParams) {
 			childrenPreferredSizes.push(await getChildPreferredSize(child))
 		}
 
-		const preferredWidth = params.collapseMainAxis ? sumPreferredWidths(childrenPreferredSizes) : null
-		const preferredHeight = params.collapseCrossAxis ? maxPreferredHeight(childrenPreferredSizes) : null
+		const preferredWidth = params.collapseMainAxis ? sumPreferredHeights(childrenPreferredSizes) : null
+		const preferredHeight = params.collapseCrossAxis ? maxPreferredWidth(childrenPreferredSizes) : null
 
 		return {
 			async mount({ layout, mountChild, element }) {
@@ -22,25 +22,25 @@ export function Row(params: FlexSystemParams) {
 				const greedyChildrenIndexes: number[] = []
 
 				// set the child sizes
-				// greedy children (those with preferredWidth === null) are set to width = 0
+				// greedy children (those with a preferred height of null) are set to height = 0
 				for (const childPreferredSize of childrenPreferredSizes) {
-					if (childPreferredSize.width === null) greedyChildrenIndexes.push(childSizes.length)
-					else spaceTaken += childPreferredSize.width
+					if (childPreferredSize.height === null) greedyChildrenIndexes.push(childSizes.length)
+					else spaceTaken += childPreferredSize.height
 
 					childSizes.push({
-						height: params.crossAxisAlignment === 'stretch' ? layout.height : childPreferredSize.height ?? layout.height,
-						width: childPreferredSize.width ?? 0,
+						width: params.crossAxisAlignment === 'stretch' ? layout.width : childPreferredSize.width ?? layout.width,
+						height: childPreferredSize.height ?? 0,
 					})
 				}
 
-				let extraSpace = layout.width - spaceTaken
-				if (extraSpace < 0) throw new Error('children of Row are too wide for the width alloted to Row')
+				let extraSpace = layout.height - spaceTaken
+				if (extraSpace < 0) throw new Error('children of Column are too high for the height alloted to Column')
 
 				// If there are any greedy children, split up the extra space between them
 				if (greedyChildrenIndexes.length) {
-					const greedyChildrenWidth = extraSpace / greedyChildrenIndexes.length
+					const greedyChildrenHeight = extraSpace / greedyChildrenIndexes.length
 
-					for (const greedyChildIndex of greedyChildrenIndexes) childSizes[greedyChildIndex].width = greedyChildrenWidth
+					for (const greedyChildIndex of greedyChildrenIndexes) childSizes[greedyChildIndex].height = greedyChildrenHeight
 
 					extraSpace = 0
 				}
@@ -53,7 +53,7 @@ export function Row(params: FlexSystemParams) {
 
 						for (const childSize of childSizes) {
 							childrenMainPositions.push(spaceSoFar)
-							spaceSoFar += childSize.width + distance
+							spaceSoFar += childSize.height + distance
 						}
 					}
 
@@ -75,8 +75,8 @@ export function Row(params: FlexSystemParams) {
 				for (const childSize of childSizes) {
 					if (!params.crossAxisAlignment || params.crossAxisAlignment === 'stretch' || params.crossAxisAlignment === 'start')
 						childrenCrossPositions.push(0)
-					else if (params.crossAxisAlignment === 'end') childrenCrossPositions.push(layout.height - childSize.height)
-					else childrenCrossPositions.push((layout.height - childSize.height) / 2)
+					else if (params.crossAxisAlignment === 'end') childrenCrossPositions.push(layout.width - childSize.width)
+					else childrenCrossPositions.push((layout.width - childSize.width) / 2)
 				}
 
 				// Mount the children
@@ -89,8 +89,8 @@ export function Row(params: FlexSystemParams) {
 					await mountChild(child, {
 						width: childSize.width,
 						height: childSize.height,
-						x: childMainPos,
-						y: childCrossPos,
+						x: childCrossPos,
+						y: childMainPos,
 					})
 				}
 			},
@@ -99,25 +99,25 @@ export function Row(params: FlexSystemParams) {
 	})
 }
 
-function sumPreferredWidths(preferredSizes: Size[]) {
+function sumPreferredHeights(preferredSizes: Size[]) {
 	let start = 0
 
 	for (const size of preferredSizes) {
-		if (size.width === null) return null
+		if (size.height === null) return null
 
-		start += size.width
+		start += size.height
 	}
 
 	return start
 }
 
-function maxPreferredHeight(preferredSizes: Size[]) {
+function maxPreferredWidth(preferredSizes: Size[]) {
 	let max = 0
 
 	for (const size of preferredSizes) {
-		if (size.height === null) return null
+		if (size.width === null) return null
 
-		if (size.height > max) max = size.height
+		if (size.width > max) max = size.width
 	}
 
 	return max

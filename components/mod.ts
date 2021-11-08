@@ -1,4 +1,5 @@
 export * from './Center.ts'
+export * from './Column.ts'
 export * from './Expanded.ts'
 export * from './Padding.ts'
 export * from './Row.ts'

@@ -1,12 +1,11 @@
-import { widget, Text, createLubberApplication, Center, Row } from '../mod.ts'
+import { widget, Text, createLubberApplication, Center, Row, Column } from '../mod.ts'
 
 function App() {
 	const { $, build } = widget()
 
 	build(() =>
-		Row({
+		Column({
 			children: [Text('Hello, World!'), Text('Hello, World!')],
-			mainAxisAlignment: 'space-around',
 		})
 	)
 
