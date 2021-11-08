@@ -27,13 +27,24 @@ export async function createLubberApplication(params: CreateLubberApplicationPar
 	styleEl.textContent = `* { user-select: none; overflow: hidden; }`
 	document.head.appendChild(styleEl)
 
-	const rootLayout: Layout = {
+	const getRootLayout = (): Layout => ({
 		x: 0,
 		y: 0,
 		width: rootElement.clientWidth,
 		height: rootElement.clientHeight,
-	}
+	})
 
 	await params.rootWidget.$.preferredSize(context)
-	await params.rootWidget.$.mount(rootElement, rootLayout)
+	await params.rootWidget.$.mount(rootElement, getRootLayout())
+
+	let timeout: number
+	globalThis.window.addEventListener('resize', () => {
+		clearTimeout(timeout)
+		timeout = setTimeout(async () => {
+			console.log('Application resized - rerendering...')
+			await params.rootWidget.$.destroy()
+			await params.rootWidget.$.preferredSize(context)
+			await params.rootWidget.$.mount(rootElement, getRootLayout())
+		}, 500)
+	})
 }

@@ -41,14 +41,25 @@ async function createLubberApplication(params) {
     const styleEl = document.createElement('style');
     styleEl.textContent = `* { user-select: none; overflow: hidden; }`;
     document.head.appendChild(styleEl);
-    const rootLayout = {
-        x: 0,
-        y: 0,
-        width: rootElement.clientWidth,
-        height: rootElement.clientHeight
-    };
+    const getRootLayout = ()=>({
+            x: 0,
+            y: 0,
+            width: rootElement.clientWidth,
+            height: rootElement.clientHeight
+        })
+    ;
     await params.rootWidget.$.preferredSize(context);
-    await params.rootWidget.$.mount(rootElement, rootLayout);
+    await params.rootWidget.$.mount(rootElement, getRootLayout());
+    let timeout;
+    globalThis.window.addEventListener('resize', ()=>{
+        clearTimeout(timeout);
+        timeout = setTimeout(async ()=>{
+            console.log('Application resized - rerendering...');
+            await params.rootWidget.$.destroy();
+            await params.rootWidget.$.preferredSize(context);
+            await params.rootWidget.$.mount(rootElement, getRootLayout());
+        }, 500);
+    });
 }
 function elementWidget(type, initialize) {
     let context = null;
@@ -193,7 +204,6 @@ function widget() {
         await activeChildWidget.$.destroy();
         if (afterDestroyFn) await afterDestroyFn();
         thisContext = null;
-        buildFn = null;
         activeChildWidget = null;
         beforeDestroyFn = null;
         afterDestroyFn = null;

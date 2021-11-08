@@ -43,7 +43,6 @@ export function widget(): WidgetMaker {
 		if (afterDestroyFn) await afterDestroyFn()
 
 		thisContext = null
-		buildFn = null
 		activeChildWidget = null
 
 		beforeDestroyFn = null
