@@ -5,33 +5,6 @@ function setPosition(element, layout) {
     element.style.left = `${layout.x}px`;
     element.style.top = `${layout.y}px`;
 }
-async function carelessMounter(getChildPreferredSize, child) {
-    if (!child) {
-        return {
-            carelessMountChild () {
-                return Promise.resolve();
-            },
-            preferredSize: {
-                width: null,
-                height: null
-            }
-        };
-    }
-    const childPreferredSize = await getChildPreferredSize(child);
-    async function carelessMountChild(mountChild, layout) {
-        if (!child) throw new Error('something went wrong');
-        await mountChild(child, {
-            width: childPreferredSize.width !== null ? childPreferredSize.width <= layout.width ? childPreferredSize.width : layout.width : layout.width,
-            height: childPreferredSize.height !== null ? childPreferredSize.height <= layout.height ? childPreferredSize.height : layout.height : layout.height,
-            x: layout.x,
-            y: layout.y
-        });
-    }
-    return {
-        carelessMountChild,
-        preferredSize: childPreferredSize
-    };
-}
 function repeat(text, number) {
     let newText = '';
     for(let i = 1; i <= number; i++)newText += text;
@@ -125,156 +98,26 @@ function elementWidget(type, initialize) {
         }
     };
 }
-const getSumX = (box)=>{
-    if (box === undefined) return 0;
-    if (typeof box === 'number') return box * 2;
-    return (box.left ?? 0) + (box.right ?? 0);
-};
-const getSumY = (box)=>{
-    if (box === undefined) return 0;
-    if (typeof box === 'number') return box * 2;
-    return (box.top ?? 0) + (box.bottom ?? 0);
-};
-function Padding(params = {
-}) {
-    return elementWidget('div', async ({ getChildPreferredSize  })=>{
-        const { carelessMountChild , preferredSize  } = await carelessMounter(getChildPreferredSize, params.child);
-        const sumX = getSumX(params.padding);
-        const sumY = getSumY(params.padding);
-        console.log(preferredSize.width, preferredSize.width !== null ? preferredSize.width + sumX : null);
-        return {
-            mount ({ mountChild , layout  }) {
-                const padding = params.padding ?? 0;
-                console.log(padding, layout.x + (typeof padding === 'number' ? padding / 2 : padding.left ?? 0));
-                return carelessMountChild(mountChild, {
-                    x: layout.x + (typeof padding === 'number' ? padding : padding.left ?? 0),
-                    y: layout.y + (typeof padding === 'number' ? padding : padding.top ?? 0),
-                    width: layout.width - sumX,
-                    height: layout.height - sumY
+function Center(params) {
+    return elementWidget('div', ({ getChildPreferredSize  })=>({
+            async mount ({ layout , mountChild , element  }) {
+                setPosition(element, layout);
+                const childPreferredSize = await getChildPreferredSize(params.child);
+                const childWidth = childPreferredSize.width ?? layout.width;
+                const childHeight = childPreferredSize.height ?? layout.height;
+                await mountChild(params.child, {
+                    width: childWidth,
+                    height: childHeight,
+                    x: (layout.width - childWidth) / 2,
+                    y: (layout.height - childHeight) / 2
                 });
             },
             preferredSize: {
-                width: preferredSize.width !== null ? preferredSize.width + sumX : null,
-                height: preferredSize.height !== null ? preferredSize.height + sumY : null
+                width: null,
+                height: null
             }
-        };
-    });
-}
-function SizedBox(params = {
-}) {
-    return elementWidget('div', async ({ getChildPreferredSize  })=>{
-        const childPreferredSize = params.child ? await getChildPreferredSize(params.child) : {
-            width: null,
-            height: null
-        };
-        const preferredSize = {
-            width: getWidth(params, childPreferredSize.width),
-            height: getHeight(params, childPreferredSize.height)
-        };
-        return {
-            async mount ({ element , layout , mountChild  }) {
-                setPosition(element, layout);
-                if (params.child) await mountChild(params.child, {
-                    width: childPreferredSize.width !== null ? childPreferredSize.width <= layout.width ? childPreferredSize.width : layout.width : layout.width,
-                    height: childPreferredSize.height !== null ? childPreferredSize.height <= layout.height ? childPreferredSize.height : layout.height : layout.height,
-                    x: 0,
-                    y: 0
-                });
-            },
-            preferredSize
-        };
-    });
-}
-function getWidth(params, childPreferredWidth) {
-    if (params.width) {
-        return params.width;
-    }
-    if (params.maxWidth) {
-        if (childPreferredWidth === null) return params.maxWidth;
-        if (childPreferredWidth > params.maxWidth) return params.maxWidth;
-        return childPreferredWidth;
-    }
-    if (childPreferredWidth) return childPreferredWidth;
-    return null;
-}
-function getHeight(params, childPreferredHeight) {
-    if (params.height) {
-        return params.height;
-    }
-    if (params.maxHeight) {
-        if (childPreferredHeight === null) return params.maxHeight;
-        if (childPreferredHeight > params.maxHeight) return params.maxHeight;
-        return childPreferredHeight;
-    }
-    if (childPreferredHeight) return childPreferredHeight;
-    return null;
-}
-const getSumXBorders = (borders)=>{
-    if (!borders) return 0;
-    if (borders.width !== undefined) return borders.width * 2;
-    const box = borders;
-    return (box.left?.width ?? 0) + (box.right?.width ?? 0);
-};
-const getSumYBorders = (borders)=>{
-    if (!borders) return 0;
-    if (borders.width !== undefined) return borders.width * 2;
-    const box = borders;
-    return (box.top?.width ?? 0) + (box.bottom?.width ?? 0);
-};
-function StyledBox(params = {
-}) {
-    return elementWidget('div', async ({ getChildPreferredSize  })=>{
-        const { carelessMountChild , preferredSize  } = await carelessMounter(getChildPreferredSize, params.child);
-        return {
-            async mount ({ element , layout , mountChild  }) {
-                const trueWidth = layout.width - getSumXBorders(params.border);
-                const trueHeight = layout.height - getSumYBorders(params.border);
-                if (trueWidth < 0) throw new Error('borders are too wide in the X direction.  They took up all the space available and are asking for more');
-                if (trueHeight < 0) throw new Error('borders are too wide in the Y direction.  They took up all the space available and are asking for more');
-                element.style.position = 'absolute';
-                element.style.width = `${trueWidth}px`;
-                element.style.height = `${trueHeight}px`;
-                element.style.left = `${layout.x}px`;
-                element.style.top = `${layout.y}px`;
-                const stringifyBorder = (border)=>`${border.width}px ${border.style} ${border.color}`
-                ;
-                if (params.borderRadius) {
-                    if (typeof params.borderRadius === 'number') element.style.borderRadius = `${params.borderRadius}`;
-                    else {
-                        if (params.borderRadius.topLeft) element.style.borderTopLeftRadius = `${params.borderRadius.topLeft}`;
-                        if (params.borderRadius.topRight) element.style.borderTopRightRadius = `${params.borderRadius.topRight}`;
-                        if (params.borderRadius.bottomLeft) element.style.borderBottomLeftRadius = `${params.borderRadius.bottomLeft}`;
-                        if (params.borderRadius.bottomRight) element.style.borderBottomRightRadius = `${params.borderRadius.bottomRight}`;
-                    }
-                }
-                if (params.border) {
-                    if (params.border.color) element.style.border = stringifyBorder(params.border);
-                    else {
-                        const borders = params.border;
-                        if (borders.right) element.style.borderRight = stringifyBorder(borders.right);
-                        if (borders.left) element.style.borderLeft = stringifyBorder(borders.left);
-                        if (borders.bottom) element.style.borderBottom = stringifyBorder(borders.bottom);
-                        if (borders.top) element.style.borderTop = stringifyBorder(borders.top);
-                    }
-                }
-                if (params.color) element.style.background = params.color;
-                else if (params.gradient) element.style.background = params.gradient;
-                if (params.boxShadow) element.style.boxShadow = `${params.boxShadow.x}px ${params.boxShadow.y}px ${params.boxShadow.blur} ${params.boxShadow.spread} ${params.boxShadow.color}`;
-                if (params.opacity) element.style.opacity = `${params.opacity}`;
-                if (params.invisible) element.style.visibility = 'hidden';
-                if (params.transform) element.style.transform = params.transform;
-                if (params.filter) element.style.filter = params.filter;
-                if (params.backdropFilter) element.style.backdropFilter = params.backdropFilter;
-                await carelessMountChild(mountChild, {
-                    x: 0,
-                    y: 0,
-                    width: trueWidth,
-                    height: trueHeight
-                });
-            },
-            preferredSize
-        };
-    });
+        })
+    );
 }
 function Text(text, params = {
 }) {
@@ -401,17 +244,8 @@ function widget() {
 }
 function App() {
     const { $ , build  } = widget();
-    build(()=>SizedBox({
-            child: StyledBox({
-                color: 'red',
-                child: Padding({
-                    padding: 10,
-                    child: StyledBox({
-                        color: 'green',
-                        child: Text('Hello, World!')
-                    })
-                })
-            })
+    build(()=>Center({
+            child: Text('Hello, World!')
         })
     );
     return {
