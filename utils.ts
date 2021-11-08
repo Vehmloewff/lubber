@@ -69,3 +69,11 @@ export function repeat(text: string, number: number) {
 
 	return newText
 }
+
+export function sum(numbers: number[]) {
+	let start = 0
+
+	for (const number of numbers) start += number
+
+	return start
+}
