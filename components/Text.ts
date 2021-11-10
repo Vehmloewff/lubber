@@ -1,17 +1,18 @@
 import { elementWidget } from '../element-widget.ts'
 import { repeat, setPosition } from '../utils.ts'
+import { RGBA, colorTools } from '../mod.ts'
 
 export interface TextShadow {
 	x: number
 	y: number
 	blur: number
-	color: string
+	color: RGBA
 }
 
 export interface TextParams {
 	size?: number
 	font?: string
-	color?: string
+	color?: RGBA
 	textShadow?: TextShadow
 	italic?: boolean
 	bold?: boolean
@@ -37,9 +38,11 @@ export function Text(text: string, params: TextParams = {}) {
 
 				element.style.fontSize = `${size}px`
 				element.style.fontFamily = font
-				if (params.color) element.style.color = params.color
+				if (params.color) element.style.color = colorTools.stringifyColor(params.color)
 				if (params.textShadow)
-					element.style.textShadow = `${params.textShadow.x}px ${params.textShadow.y}px ${params.textShadow.blur}px ${params.textShadow.color}`
+					element.style.textShadow = `${params.textShadow.x}px ${params.textShadow.y}px ${
+						params.textShadow.blur
+					}px ${colorTools.stringifyColor(params.textShadow.color)}`
 
 				if (italic) element.style.textDecoration = 'italic'
 				element.style.fontWeight = `${weight}`

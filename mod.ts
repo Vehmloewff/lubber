@@ -1,5 +1,6 @@
 export * from './animation.ts'
 export * from './application.ts'
+export * from './color.ts'
 export * from './context.ts'
 export * from './components/mod.ts'
 export * from './types.ts'

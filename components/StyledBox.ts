@@ -1,10 +1,10 @@
 import { BoxCorners, BoxSides } from './types.ts'
-import { Widget } from '../mod.ts'
+import { Widget, RGBA, colorTools } from '../mod.ts'
 import { elementWidget } from '../element-widget.ts'
 import { carelessMounter } from '../utils.ts'
 
 export interface BorderStyle {
-	color: string
+	color: RGBA
 	width: number
 	style: string
 }
@@ -14,13 +14,13 @@ export interface BoxShadow {
 	spread: number
 	x: number
 	y: number
-	color: string
+	color: RGBA
 }
 
 export interface StyledBoxParams {
 	borderRadius?: number | Partial<BoxCorners<number>>
 	border?: BorderStyle | Partial<BoxSides<BorderStyle>>
-	color?: string
+	color?: RGBA
 	gradient?: string
 	child?: Widget
 	boxShadow?: BoxShadow
@@ -73,7 +73,8 @@ export function StyledBox(params: StyledBoxParams = {}) {
 				element.style.left = `${layout.x}px`
 				element.style.top = `${layout.y}px`
 
-				const stringifyBorder = (border: BorderStyle) => `${border.width}px ${border.style} ${border.color}`
+				const stringifyBorder = (border: BorderStyle) =>
+					`${border.width}px ${border.style} ${colorTools.stringifyColor(border.color)}`
 
 				if (params.borderRadius) {
 					if (typeof params.borderRadius === 'number') element.style.borderRadius = `${params.borderRadius}`
@@ -97,11 +98,13 @@ export function StyledBox(params: StyledBoxParams = {}) {
 					}
 				}
 
-				if (params.color) element.style.background = params.color
+				if (params.color) element.style.background = colorTools.stringifyColor(params.color)
 				else if (params.gradient) element.style.background = params.gradient
 
 				if (params.boxShadow)
-					element.style.boxShadow = `${params.boxShadow.x}px ${params.boxShadow.y}px ${params.boxShadow.blur} ${params.boxShadow.spread} ${params.boxShadow.color}`
+					element.style.boxShadow = `${params.boxShadow.x}px ${params.boxShadow.y}px ${params.boxShadow.blur} ${
+						params.boxShadow.spread
+					} ${colorTools.stringifyColor(params.boxShadow.color)}`
 
 				if (params.opacity) element.style.opacity = `${params.opacity}`
 
