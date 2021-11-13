@@ -3,10 +3,10 @@ import { RGBA } from './color.ts'
 
 export interface ThemeData {
 	primaryColor: RGBA
-	corners: 'sharp' | 'medium' | 'round'
+	corners: 'sharp' | 'gentle' | 'round'
 	backgroundColor: RGBA
 	foregroundColor: RGBA
-	darkTheme: boolean
+	isDark: boolean
 }
 
 export function setTheme(context: Context, themeData: Partial<ThemeData>) {

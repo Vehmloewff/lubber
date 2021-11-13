@@ -34,7 +34,7 @@ export type BuildFn = (context: Context) => Promise<Widget> | Widget
 export type UnknownPromiseFn = () => Promise<unknown> | unknown
 
 export interface WidgetMaker {
-	build(fn: (context: Context) => Promise<Widget> | Widget): void
+	build(fn: BuildFn): void
 	setState(fn: UnknownPromiseFn): Promise<void>
 	beforeDestroy(fn: UnknownPromiseFn): void
 	afterDestroy(fn: UnknownPromiseFn): void

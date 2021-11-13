@@ -19,6 +19,8 @@ export interface MouseData {
 
 export interface PressAreaParams {
 	onPressed?(): unknown
+	onLongPress?(): unknown
+	onSecondaryClick?(): unknown
 	onPressedEvent?(x: number, y: number): unknown
 	onPressDown?(x: number, y: number): unknown
 	onPressMove?(x: number, y: number): unknown
@@ -116,14 +118,14 @@ export function PressArea(params: PressAreaParams = {}) {
 					if (params.onMouseLeave) params.onMouseLeave()
 				}
 
-				document.addEventListener('touchstart', touchstart)
-				document.addEventListener('touchmove', touchmove)
-				document.addEventListener('touchend', touchend)
-				document.addEventListener('mousedown', mousedown)
-				document.addEventListener('mousemove', mousemove)
-				document.addEventListener('mouseup', mouseup)
-				document.addEventListener('mouseenter', mouseenter)
-				document.addEventListener('mouseleave', mouseleave)
+				element.addEventListener('touchstart', touchstart)
+				element.addEventListener('touchmove', touchmove)
+				element.addEventListener('touchend', touchend)
+				element.addEventListener('mousedown', mousedown)
+				element.addEventListener('mousemove', mousemove)
+				element.addEventListener('mouseup', mouseup)
+				element.addEventListener('mouseover', mouseenter)
+				element.addEventListener('mouseleave', mouseleave)
 
 				await carelessMountChild(mountChild, layout)
 			},

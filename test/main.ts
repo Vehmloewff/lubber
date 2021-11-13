@@ -1,4 +1,4 @@
-import { widget, Text, createLubberApplication, Center, Row, Column, Stack } from '../mod.ts'
+import { widget, Text, createLubberApplication, Center, Row, Column, Stack, Button, colors } from '../mod.ts'
 
 function App() {
 	const { $, build } = widget()
@@ -6,7 +6,7 @@ function App() {
 	build(() =>
 		Stack({
 			children: [
-				Text('Hello, World!'),
+				Button({ primary: true, child: Text('OPEN', { bold: true, color: colors.white }) }),
 				{
 					bottom: 0,
 					right: 0,

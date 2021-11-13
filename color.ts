@@ -163,45 +163,45 @@ function stringifyColor(rgba: RGBA): string {
 	return `rgb(${rgba[0]}, ${rgba[1]}, ${rgba[2]}, ${rgba[3]})`
 }
 
-function lighten(color: string, amount = 20) {
-	const parsed = parseColor(color)
+function lighten(color: RGBA, amount = 20): RGBA {
+	let [r, g, b, a] = color
 
-	parsed[0] += amount
-	parsed[1] += amount
-	parsed[2] += amount
+	r += amount
+	g += amount
+	b += amount
 
-	return stringifyColor(parsed)
+	return [r, g, b, a]
 }
 
-function darken(color: string, amount = 20) {
-	const parsed = parseColor(color)
+function darken(color: RGBA, amount = 20): RGBA {
+	let [r, g, b, a] = color
 
-	parsed[0] -= amount
-	parsed[1] -= amount
-	parsed[2] -= amount
+	r -= amount
+	g -= amount
+	b -= amount
 
-	return stringifyColor(parsed)
+	return [r, g, b, a]
 }
 
-function mediumize(color: string, amount = 20) {
+function mediumize(color: RGBA, amount = 20) {
 	if (colorIsDark(color)) return lighten(color, amount)
 	return darken(color, amount)
 }
 
-function similarize(color: string, amount = 20) {
+function similarize(color: RGBA, amount = 20) {
 	if (colorIsDark(color)) return darken(color, amount)
 	return lighten(color, amount)
 }
 
-function lowerAlpha(color: string, amount = 0.1) {
+function lowerAlpha(color: RGBA, amount = 0.1) {
 	return setAlpha(color, getAlpha(color) - amount)
 }
-function raiseAlpha(color: string, amount = 0.1) {
+function raiseAlpha(color: RGBA, amount = 0.1) {
 	return setAlpha(color, getAlpha(color) + amount)
 }
 
-function colorIsDark(color: string) {
-	const [r, g, b] = parseColor(color)
+function colorIsDark(color: RGBA) {
+	const [r, g, b] = color
 
 	// HSP (Highly Sensitive Poo) equation from http://alienryderflex.com/hsp.html
 	const hsp = Math.sqrt(0.299 * (r * r) + 0.587 * (g * g) + 0.114 * (b * b))
@@ -209,17 +209,14 @@ function colorIsDark(color: string) {
 	return hsp < 127.5
 }
 
-function setAlpha(color: string, alpha: number) {
+function setAlpha(color: RGBA, alpha: number): RGBA {
 	if (alpha > 1) alpha = 1
 	else if (alpha < 0) alpha = 0
 
-	const parsed = parseColor(color)
-	parsed[3] = alpha
-
-	return stringifyColor(parsed)
+	return [color[0], color[1], color[2], alpha]
 }
-function getAlpha(color: string): number {
-	return parseColor(color)[3]
+function getAlpha(color: RGBA): number {
+	return color[3]
 }
 
 export const colorTools = {

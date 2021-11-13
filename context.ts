@@ -26,7 +26,7 @@ export function makeContext(inheritFrom?: Context): Context {
 	}
 
 	function getObject(rootId: string) {
-		const object: Record<string, unknown> = {}
+		const object: Record<string, unknown> = inheritFrom ? (inheritFrom?.getObject(rootId) as Record<string, unknown>) : {}
 
 		for (const id in keys) {
 			if (!id.startsWith(`${rootId}.`)) continue

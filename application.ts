@@ -2,6 +2,7 @@ import { Widget, Layout } from './types.ts'
 import { makeContext } from './context.ts'
 import { ThemeData, setTheme } from './theme.ts'
 import { colors } from './color.ts'
+import { setRootButtonTheme } from './mod.ts'
 
 export interface CreateLubberApplicationParams {
 	rootElement?: string | HTMLElement
@@ -39,7 +40,7 @@ export async function createLubberApplication(params: CreateLubberApplicationPar
 			{},
 			{
 				backgroundColor: colors.white,
-				corners: 'medium',
+				corners: 'round',
 				darkTheme: false,
 				foregroundColor: colors.black,
 				primaryColor: colors.blue,
@@ -47,6 +48,7 @@ export async function createLubberApplication(params: CreateLubberApplicationPar
 			params.theme || {}
 		)
 	)
+	setRootButtonTheme(context)
 
 	const getRootLayout = (): Layout => ({
 		x: 0,

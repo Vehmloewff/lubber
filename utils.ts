@@ -2,6 +2,10 @@
 
 import { Layout, Widget, Size } from './types.ts'
 import { ElementWidgetInitializeMountParams, ElementWidgetInitializeParams } from './element-widget.ts'
+import { Context } from './context.ts'
+import { RGBA, colorTools } from './color.ts'
+import { ThemeData } from './theme.ts'
+import { BoxShadow } from './mod.ts'
 
 export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -76,4 +80,39 @@ export function sum(numbers: number[]) {
 	for (const number of numbers) start += number
 
 	return start
+}
+
+export function infer<T>(a: T | 'infer', b: T | (() => T)): T {
+	// deno-lint-ignore no-explicit-any
+	const runB = (): T => (typeof b === 'function' ? (b as any)() : b)
+
+	return a === 'infer' ? runB() : a
+}
+
+export type Inferable<T> = T | 'infer'
+
+export function contrastColor(context: Context, color: RGBA, amount = 20) {
+	return context.getKey('theme.isDark') ? colorTools.lighten(color, amount) : colorTools.darken(color, amount)
+}
+
+export function blendColor(context: Context, color: RGBA, amount = 20) {
+	return context.getKey('theme.isDark') ? colorTools.darken(color, amount) : colorTools.lighten(color, amount)
+}
+
+export function mediumBorderRadius(context: Context) {
+	const radius = context.getKey('theme.corners') as ThemeData['corners']
+	console.log(radius)
+	if (radius === 'sharp') return 0
+	if (radius === 'gentle') return 4
+	if (radius === 'round') return 100
+}
+
+export function generateShadow(elevation: number): BoxShadow {
+	return {
+		x: 0,
+		y: 0,
+		blur: elevation * 5,
+		spread: elevation * 3,
+		color: [0, 0, 0, 0.25],
+	}
 }
