@@ -38,7 +38,7 @@ export function elementWidget<T extends HTMLElement = HTMLElement>(
 	let destroyFn: UnknownPromiseFn | null | void = null
 	let initializeResult: ElementWidgetInitializeResult<T> | null = null
 	let stashedElement: T | null = null
-	let mountedWidgets: Widget[] = []
+	const mountedWidgets: Widget[] = []
 
 	async function preferredSize(parentContext: Context): Promise<Size> {
 		context = parentContext
@@ -85,39 +85,3 @@ export function elementWidget<T extends HTMLElement = HTMLElement>(
 
 	return { $: { preferredSize, mount, destroy } }
 }
-
-// Context is never cloned - parent context is set and used
-// export function elementWidget<T extends HTMLElement = HTMLElement>(params: ElementWidgetParams<T>): Widget {
-// 	let context: Context | null = null
-// 	let destroyFn: UnknownPromiseFn | null = null
-
-// 	function preferredSize(parentContext: Context): Promise<Size> {
-// 		context = parentContext
-
-// 		return params.preferredSize(parentContext)
-// 	}
-
-// 	async function mount(parentElement: HTMLElement, layout: Layout): Promise<void> {
-// 		if (!context) throw new Error('something went wacky')
-
-// 		const element = document.createElement(params.elementType) as T
-
-// 		async function registerChild(child: Widget, layout: (preferredSize: Size) => Promise<Layout>) {
-// 			if (!context) throw new Error('something went wacky')
-// 			const preferredSize = await child.$.preferredSize(context)
-
-// 			await child.$.mount(element, await layout(preferredSize))
-// 		}
-
-// 		destroyFn = await params.build({ context, element, layout, registerChild })
-// 		parentElement.appendChild(element)
-// 	}
-
-// 	async function destroy(): Promise<void> {
-// 		if (!destroyFn) throw new Error('something wrong happened')
-
-// 		await destroyFn()
-// 	}
-
-// 	return { $: { preferredSize, mount, destroy } }
-// }
