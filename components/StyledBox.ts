@@ -30,6 +30,7 @@ export interface StyledBoxParams {
 	filter?: string
 	backdropFilter?: string
 	transition?: string
+	cursor?: string
 }
 
 const getSumXBorders = (borders: StyledBoxParams['border']) => {
@@ -53,6 +54,9 @@ const getSumYBorders = (borders: StyledBoxParams['border']) => {
 export function StyledBox(params: StyledBoxParams = {}) {
 	return elementWidget<HTMLDivElement>('div', async ({ getChildPreferredSize }) => {
 		const { carelessMountChild, preferredSize } = await carelessMounter(getChildPreferredSize, params.child)
+
+		const bordersX = getSumXBorders(params.border)
+		const bordersY = getSumYBorders(params.border)
 
 		return {
 			async mount({ element, layout, mountChild }) {
@@ -114,6 +118,7 @@ export function StyledBox(params: StyledBoxParams = {}) {
 				if (params.transform) element.style.transform = params.transform
 				if (params.filter) element.style.filter = params.filter
 				if (params.transition) element.style.transition = params.transition
+				if (params.cursor) element.style.cursor = params.cursor
 
 				// I guess TS doesn't recognize backdropFilter yet
 				// deno-lint-ignore no-explicit-any
@@ -121,7 +126,10 @@ export function StyledBox(params: StyledBoxParams = {}) {
 
 				await carelessMountChild(mountChild, { x: 0, y: 0, width: trueWidth, height: trueHeight })
 			},
-			preferredSize,
+			preferredSize: {
+				width: preferredSize.width !== null ? preferredSize.width + bordersX : null,
+				height: preferredSize.height !== null ? preferredSize.height + bordersY : null,
+			},
 		}
 	})
 }
