@@ -101,7 +101,6 @@ export function blendColor(context: Context, color: RGBA, amount = 20) {
 
 export function mediumBorderRadius(context: Context) {
 	const radius = context.getKey('theme.corners') as ThemeData['corners']
-	console.log(radius)
 	if (radius === 'sharp') return 0
 	if (radius === 'gentle') return 4
 	if (radius === 'round') return 100

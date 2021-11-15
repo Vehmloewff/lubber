@@ -78,7 +78,6 @@ export function StyledBox(params: StyledBoxParams = {}) {
 					`${border.width}px ${border.style} ${colorTools.stringifyColor(border.color)}`
 
 				if (params.borderRadius) {
-					console.log(params.borderRadius)
 					if (typeof params.borderRadius === 'number') element.style.borderRadius = `${params.borderRadius}px`
 					else {
 						if (params.borderRadius.topLeft) element.style.borderTopLeftRadius = `${params.borderRadius.topLeft}px`

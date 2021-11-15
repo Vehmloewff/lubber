@@ -36,11 +36,8 @@ export function widget(): WidgetMaker {
 	}
 
 	async function destroy(): Promise<void> {
-		console.log('destroy')
-
 		if (!activeChildWidget) throw new Error('widget has already been destroyed')
 
-		console.log(beforeDestroyFn)
 		if (beforeDestroyFn) await beforeDestroyFn()
 		await activeChildWidget.$.destroy()
 		if (afterDestroyFn) await afterDestroyFn()
@@ -65,8 +62,6 @@ export function widget(): WidgetMaker {
 			throw new Error('"setState" cannot be called before widget is mounted or after it is destroyed')
 
 		await fn()
-
-		console.log('setState', activeChildWidget)
 
 		await activeChildWidget.$.destroy()
 		activeChildWidget = await buildFn(thisContext)

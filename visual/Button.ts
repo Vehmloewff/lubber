@@ -93,8 +93,6 @@ export function Button(params: ButtonParams = {}) {
 		const trueHoverColor = primary ? primaryHoverColor : hoverColor
 		const trueColor = primary ? primaryColor : color
 
-		console.log('hi')
-
 		return StyledBox({
 			border,
 			borderRadius,

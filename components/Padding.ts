@@ -29,12 +29,9 @@ export function Padding(params: PaddingParams = {}) {
 		const sumX = getSumX(params.padding)
 		const sumY = getSumY(params.padding)
 
-		console.log(preferredSize.width, preferredSize.width !== null ? preferredSize.width + sumX : null)
-
 		return {
 			mount({ mountChild, layout }) {
 				const padding = params.padding ?? 0
-				console.log(padding, layout.x + (typeof padding === 'number' ? padding / 2 : padding.left ?? 0))
 
 				return carelessMountChild(mountChild, {
 					x: layout.x + (typeof padding === 'number' ? padding : padding.left ?? 0),
