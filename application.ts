@@ -1,13 +1,9 @@
 import { Widget, Layout } from './types.ts'
 import { makeContext } from './context.ts'
-import { ThemeData, setTheme } from './theme.ts'
-import { colors } from './color.ts'
-import { setRootButtonTheme } from './mod.ts'
 
 export interface CreateLubberApplicationParams {
 	rootElement?: string | HTMLElement
 	rootWidget: Widget
-	theme?: Partial<ThemeData>
 }
 
 export async function createLubberApplication(params: CreateLubberApplicationParams) {
@@ -33,22 +29,6 @@ export async function createLubberApplication(params: CreateLubberApplicationPar
 		styleEl.textContent = `* { user-select: none; overflow: hidden; }`
 		document.head.appendChild(styleEl)
 	}
-
-	setTheme(
-		context,
-		Object.assign(
-			{},
-			{
-				backgroundColor: colors.white,
-				corners: 'round',
-				darkTheme: false,
-				foregroundColor: colors.black,
-				primaryColor: colors.blue,
-			},
-			params.theme || {}
-		)
-	)
-	setRootButtonTheme(context)
 
 	const getRootLayout = (): Layout => ({
 		x: 0,

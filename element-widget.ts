@@ -38,6 +38,7 @@ export function elementWidget<T extends HTMLElement = HTMLElement>(
 	let destroyFn: UnknownPromiseFn | null | void = null
 	let initializeResult: ElementWidgetInitializeResult<T> | null = null
 	let stashedElement: T | null = null
+	let mountedWidgets: Widget[] = []
 
 	async function preferredSize(parentContext: Context): Promise<Size> {
 		context = parentContext
@@ -61,6 +62,7 @@ export function elementWidget<T extends HTMLElement = HTMLElement>(
 			if (!context) throw new Error('something went wacky')
 
 			await child.$.mount(element, layout)
+			mountedWidgets.push(child)
 		}
 
 		destroyFn = await initializeResult.mount({ element, layout, mountChild })
@@ -69,6 +71,8 @@ export function elementWidget<T extends HTMLElement = HTMLElement>(
 
 	async function destroy(): Promise<void> {
 		if (destroyFn) await destroyFn()
+
+		for (const mountedChild of mountedWidgets) await mountedChild.$.destroy()
 
 		if (!stashedElement) throw new Error('something wrong happened')
 		stashedElement.remove()

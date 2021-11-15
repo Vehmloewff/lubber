@@ -11,10 +11,11 @@ import {
 	prepareTextWidget,
 	PressArea,
 	keystrokeListener,
+	Padding,
 } from '../mod.ts'
 
 export interface TextFieldParams extends TextParams {
-	caretColor: RGBA
+	caretColor?: RGBA
 	/** if not set, the default caret is used */
 	caret?: Widget
 	focused?: boolean
@@ -25,6 +26,8 @@ export interface TextFieldParams extends TextParams {
 
 export function TextField(text: string, params: TextFieldParams) {
 	const { build, $, beforeDestroy } = widget()
+
+	console.log('widget')
 
 	const caret =
 		params.caret ||
@@ -41,11 +44,13 @@ export function TextField(text: string, params: TextFieldParams) {
 
 	const unsubscribe = keystrokeListener({
 		onCharacter(character) {
-			if (params.onChange)
+			if (params.focused)
 				params.onChange(
 					`${text.slice(0, params.caretPosition)}${character}${text.slice(params.caretPosition)}`,
 					params.caretPosition + 1
 				)
+
+			console.log(character)
 		},
 		onArrowDown() {
 			if (params.caretPosition !== text.length) params.onCaretChange(text.length)
@@ -66,7 +71,9 @@ export function TextField(text: string, params: TextFieldParams) {
 	})
 
 	build(() => {
-		if (!params.onChange) return Text(text, params)
+		if (!params.focused) return Text(text, params)
+
+		console.log(measureText(text.slice(0, params.caretPosition)))
 
 		return PressArea({
 			onPressedEvent(x) {
@@ -94,9 +101,10 @@ export function TextField(text: string, params: TextFieldParams) {
 			child: Stack({
 				shrinkTo: 0,
 				children: [
-					Text(text, params),
+					Padding({ padding: 2, child: Text(text, params) }),
 					{
-						right: measureText(text.slice(0, params.caretPosition)),
+						left: measureText(text.slice(0, params.caretPosition)),
+						top: 2,
 						widget: caret,
 					},
 				],
@@ -104,7 +112,10 @@ export function TextField(text: string, params: TextFieldParams) {
 		})
 	})
 
-	beforeDestroy(unsubscribe)
+	beforeDestroy(() => {
+		console.log('dismounting...')
+		unsubscribe()
+	})
 
 	return { $ }
 }
