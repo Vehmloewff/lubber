@@ -12,21 +12,36 @@ export interface PositionedWidget {
 
 export interface StackParams {
 	children: (Widget | PositionedWidget)[]
+	shrinkTo?: number
 }
 
 export function Stack(params: StackParams) {
-	return elementWidget('div', ({ getChildPreferredSize }) => {
+	return elementWidget('div', async ({ getChildPreferredSize }) => {
+		let shrinkChildPreferredSize: Size = { width: null, height: null }
+
+		if (params.shrinkTo !== undefined) {
+			const childOrPosition = params.children[params.shrinkTo]
+
+			if (childOrPosition && typeof (childOrPosition as any)?.$?.mount === 'function') {
+				const child = childOrPosition as Widget
+				shrinkChildPreferredSize = await getChildPreferredSize(child)
+			}
+		}
+
 		return {
 			async mount({ element, layout, mountChild }) {
 				setPosition(element, layout)
 
-				for (const childOrPosition of params.children) {
+				for (const childIndexString in params.children) {
+					const childIndex = parseInt(childIndexString)
+					const childOrPosition = params.children[childIndex]
+
 					// deno-lint-ignore no-explicit-any
 					const childIsUserPositioned = typeof (childOrPosition as any)?.$?.mount !== 'function'
 					const child = childIsUserPositioned ? (childOrPosition as PositionedWidget).widget : (childOrPosition as Widget)
 					const position: Partial<BoxSides<number>> = childIsUserPositioned ? (childOrPosition as PositionedWidget) : {}
 
-					const preferredSize = await getChildPreferredSize(child)
+					const preferredSize = childIndex === params.shrinkTo ? shrinkChildPreferredSize : await getChildPreferredSize(child)
 
 					const [x, width] = evaluateX(preferredSize, position, layout)
 					const [y, height] = evaluateY(preferredSize, position, layout)
@@ -34,7 +49,7 @@ export function Stack(params: StackParams) {
 					await mountChild(child, { width, height, x, y })
 				}
 			},
-			preferredSize: { width: null, height: null },
+			preferredSize: shrinkChildPreferredSize,
 		}
 	})
 }
