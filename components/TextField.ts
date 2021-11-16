@@ -12,6 +12,7 @@ import {
 	PressArea,
 	keystrokeListener,
 	DetachedZ,
+	DisablePressEvents,
 } from '../mod.ts'
 
 export interface TextFieldParams extends TextParams {
@@ -97,7 +98,7 @@ export function TextField(text: string, params: TextFieldParams) {
 					StyledBox({ cursor: 'text', child: Text(text, params) }),
 					{
 						left: measureText(text.slice(0, params.caretPosition)),
-						widget: DetachedZ({ child: caret }),
+						widget: DisablePressEvents({ child: DetachedZ({ child: caret }) }),
 					},
 				],
 			}),
@@ -121,9 +122,8 @@ export function DefaultCaret(params: DefaultCaretParams) {
 
 	let blinkOn = true
 
-	build(() => {
-		console.log(blinkOn)
-		return StyledBox({
+	build(() =>
+		StyledBox({
 			color: params.color,
 			borderRadius: 1.5,
 			child: SizedBox({
@@ -133,7 +133,7 @@ export function DefaultCaret(params: DefaultCaretParams) {
 			opacity: blinkOn ? 1 : 0,
 			transition: 'opacity 300ms',
 		})
-	})
+	)
 
 	const timeout = setInterval(() => setState(() => (blinkOn = !blinkOn)), 800)
 
