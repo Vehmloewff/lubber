@@ -1,18 +1,6 @@
-import { Size, UnknownPromiseFn, Widget, Layout } from './types.ts'
+import { Size, UnknownPromiseFn, Widget, Layout, PartialLayout } from './types.ts'
 import { Context } from './context.ts'
-
-// export interface ElementWidgetBuilderParams<T> {
-// 	context: Context
-// 	layout: Layout
-// 	element: T
-// 	registerChild(child: Widget, layout: (preferredSize: Size) => Promise<Layout>): Promise<void>
-// }
-
-// export interface ElementWidgetParams<T = HTMLElement> {
-// 	elementType: string
-// 	build(params: ElementWidgetBuilderParams<T>): Promise<UnknownPromiseFn>
-// 	preferredSize(context: Context): Promise<Size>
-// }
+import { setThisParentXY } from './utils.ts'
 
 export interface ElementWidgetInitializeParams {
 	context: Context
@@ -21,7 +9,7 @@ export interface ElementWidgetInitializeParams {
 
 export interface ElementWidgetInitializeMountParams<T> {
 	layout: Layout
-	mountChild: (child: Widget, layout: Layout) => Promise<void>
+	mountChild: (child: Widget, partialLayout: PartialLayout) => Promise<void>
 	element: T
 }
 
@@ -52,20 +40,20 @@ export function elementWidget<T extends HTMLElement = HTMLElement>(
 		return initializeResult.preferredSize
 	}
 
-	async function mount(parentElement: HTMLElement, layout: Layout): Promise<void> {
+	async function mount(parentElement: HTMLElement, parentLayout: Layout): Promise<void> {
 		if (!context || !initializeResult) throw new Error('something went wacky')
 
 		const element = document.createElement(type) as T
 		stashedElement = element
 
-		async function mountChild(child: Widget, layout: Layout) {
+		async function mountChild(child: Widget, layout: PartialLayout) {
 			if (!context) throw new Error('something went wacky')
 
-			await child.$.mount(element, layout)
+			await child.$.mount(element, { ...layout, ...setThisParentXY(parentLayout) })
 			mountedWidgets.push(child)
 		}
 
-		destroyFn = await initializeResult.mount({ element, layout, mountChild })
+		destroyFn = await initializeResult.mount({ element, layout: parentLayout, mountChild })
 		parentElement.appendChild(element)
 	}
 

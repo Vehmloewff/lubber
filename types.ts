@@ -6,9 +6,14 @@ export interface Widget {
 	$: WidgetInternals
 }
 
-export interface Layout extends FixedSize {
+export interface PartialLayout extends FixedSize {
 	x: number
 	y: number
+}
+
+export interface Layout extends PartialLayout {
+	parentXInViewport: number
+	parentYInViewport: number
 }
 
 export interface FixedSize {

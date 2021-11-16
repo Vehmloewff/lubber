@@ -38,6 +38,8 @@ export function Padding(params: PaddingParams = {}) {
 					y: layout.y + (typeof padding === 'number' ? padding : padding.top ?? 0),
 					width: layout.width - sumX,
 					height: layout.height - sumY,
+					parentXInViewport: layout.parentXInViewport,
+					parentYInViewport: layout.parentYInViewport,
 				})
 			},
 			preferredSize: {

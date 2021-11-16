@@ -1,7 +1,7 @@
 import { BoxCorners, BoxSides } from './types.ts'
 import { Widget, RGBA, colorTools } from '../mod.ts'
 import { elementWidget } from '../element-widget.ts'
-import { carelessMounter } from '../utils.ts'
+import { carelessMounter, setThisParentXY } from '../utils.ts'
 
 export interface BorderStyle {
 	color: RGBA
@@ -111,7 +111,7 @@ export function StyledBox(params: StyledBoxParams = {}) {
 						params.boxShadow.spread
 					} ${colorTools.stringifyColor(params.boxShadow.color)}`
 
-				if (params.opacity) element.style.opacity = `${params.opacity}`
+				if (params.opacity !== undefined) element.style.opacity = `${params.opacity}`
 
 				if (params.invisible) element.style.visibility = 'hidden'
 
@@ -124,7 +124,7 @@ export function StyledBox(params: StyledBoxParams = {}) {
 				// deno-lint-ignore no-explicit-any
 				if (params.backdropFilter) (element.style as any).backdropFilter = params.backdropFilter
 
-				await carelessMountChild(mountChild, { x: 0, y: 0, width: trueWidth, height: trueHeight })
+				await carelessMountChild(mountChild, { x: 0, y: 0, width: trueWidth, height: trueHeight, ...setThisParentXY(layout) })
 			},
 			preferredSize: {
 				width: preferredSize.width !== null ? preferredSize.width + bordersX : null,

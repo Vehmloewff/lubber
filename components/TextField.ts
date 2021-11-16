@@ -11,7 +11,7 @@ import {
 	prepareTextWidget,
 	PressArea,
 	keystrokeListener,
-	Padding,
+	DetachedZ,
 } from '../mod.ts'
 
 export interface TextFieldParams extends TextParams {
@@ -22,21 +22,14 @@ export interface TextFieldParams extends TextParams {
 	onChange(newText: string, caretPOsition: number): unknown
 	onCaretChange(newCaretPosition: number): unknown
 	caretPosition: number
+	onNext?(): unknown
+	onDone?(): unknown
 }
 
 export function TextField(text: string, params: TextFieldParams) {
 	const { build, $, beforeDestroy } = widget()
 
-	const caret =
-		params.caret ||
-		StyledBox({
-			color: params.caretColor || params.color || colors.black,
-			borderRadius: 1,
-			child: SizedBox({
-				height: params.lineHeight || 16,
-				width: 2,
-			}),
-		})
+	const caret = params.caret || DefaultCaret({ color: params.caretColor ?? colors.blue, height: params.lineHeight ?? params.size ?? 16 })
 
 	const measureText = (text: string) => prepareTextWidget(text, params).width
 
@@ -63,6 +56,12 @@ export function TextField(text: string, params: TextFieldParams) {
 		onDelete() {
 			if (params.caretPosition)
 				params.onChange(`${text.slice(0, params.caretPosition - 1)}${text.slice(params.caretPosition)}`, params.caretPosition - 1)
+		},
+		onEnter() {
+			if (params.onDone) params.onDone()
+		},
+		onTab() {
+			if (params.onNext) params.onNext()
 		},
 	})
 
@@ -95,11 +94,10 @@ export function TextField(text: string, params: TextFieldParams) {
 			child: Stack({
 				shrinkTo: 0,
 				children: [
-					Padding({ padding: 2, child: Text(text, params) }),
+					StyledBox({ cursor: 'text', child: Text(text, params) }),
 					{
 						left: measureText(text.slice(0, params.caretPosition)),
-						top: 2,
-						widget: caret,
+						widget: DetachedZ({ child: caret }),
 					},
 				],
 			}),
@@ -109,6 +107,37 @@ export function TextField(text: string, params: TextFieldParams) {
 	beforeDestroy(() => {
 		unsubscribe()
 	})
+
+	return { $ }
+}
+
+export interface DefaultCaretParams {
+	color: RGBA
+	height: number
+}
+
+export function DefaultCaret(params: DefaultCaretParams) {
+	const { $, build, setState, beforeDestroy } = widget()
+
+	let blinkOn = true
+
+	build(() => {
+		console.log(blinkOn)
+		return StyledBox({
+			color: params.color,
+			borderRadius: 1.5,
+			child: SizedBox({
+				height: params.height,
+				width: 3,
+			}),
+			opacity: blinkOn ? 1 : 0,
+			transition: 'opacity 300ms',
+		})
+	})
+
+	const timeout = setInterval(() => setState(() => (blinkOn = !blinkOn)), 800)
+
+	beforeDestroy(() => clearInterval(timeout))
 
 	return { $ }
 }

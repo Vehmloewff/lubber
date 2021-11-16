@@ -1,6 +1,6 @@
 import { Widget, BoxSides, Size, Layout } from '../mod.ts'
 import { elementWidget } from '../element-widget.ts'
-import { setPosition } from '../utils.ts'
+import { setPosition, setThisParentXY } from '../utils.ts'
 
 export interface PositionedWidget {
 	top?: number
@@ -22,6 +22,7 @@ export function Stack(params: StackParams) {
 		if (params.shrinkTo !== undefined) {
 			const childOrPosition = params.children[params.shrinkTo]
 
+			// deno-lint-ignore no-explicit-any
 			if (childOrPosition && typeof (childOrPosition as any)?.$?.mount === 'function') {
 				const child = childOrPosition as Widget
 				shrinkChildPreferredSize = await getChildPreferredSize(child)
@@ -46,7 +47,13 @@ export function Stack(params: StackParams) {
 					const [x, width] = evaluateX(preferredSize, position, layout)
 					const [y, height] = evaluateY(preferredSize, position, layout)
 
-					await mountChild(child, { width, height, x, y })
+					await mountChild(child, {
+						width,
+						height,
+						x,
+						y,
+						...setThisParentXY(layout),
+					})
 				}
 			},
 			preferredSize: shrinkChildPreferredSize,

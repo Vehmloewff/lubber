@@ -10,11 +10,14 @@ export interface KeystrokeListenerParams {
 	onArrowRight?(): unknown
 	onArrowLeft?(): unknown
 	onArrowDown?(): unknown
+	onTab?(): unknown
 	onOther?(id: string): unknown
 }
 
 export function keystrokeListener(params: KeystrokeListenerParams) {
 	const listener = (event: KeyboardEvent) => {
+		event.preventDefault()
+
 		if (event.key.length === 1) {
 			if (params.onCharacter) params.onCharacter(event.key)
 		} else if (event.key === 'ArrowUp') {
@@ -37,6 +40,8 @@ export function keystrokeListener(params: KeystrokeListenerParams) {
 			if (params.onControl) params.onControl()
 		} else if (event.key === 'Enter' || event.key === 'Return') {
 			if (params.onEnter) params.onEnter()
+		} else if (event.key === 'Tab') {
+			if (params.onTab) params.onTab()
 		} else {
 			if (params.onOther) params.onOther(event.key)
 		}

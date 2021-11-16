@@ -35,6 +35,8 @@ export async function createLubberApplication(params: CreateLubberApplicationPar
 		y: 0,
 		width: rootElement.clientWidth,
 		height: rootElement.clientHeight,
+		parentXInViewport: 0,
+		parentYInViewport: 0,
 	})
 
 	await params.rootWidget.$.preferredSize(context)

@@ -55,8 +55,8 @@ export async function carelessMounter(
 						? childPreferredSize.height
 						: layout.height
 					: layout.height,
-			x: layout.x,
-			y: layout.y,
+			x: 0,
+			y: 0,
 		})
 	}
 
@@ -113,5 +113,12 @@ export function generateShadow(elevation: number): BoxShadow {
 		blur: elevation * 5,
 		spread: elevation * 3,
 		color: [0, 0, 0, 0.25],
+	}
+}
+
+export function setThisParentXY(parentLayout: Layout) {
+	return {
+		parentXInViewport: parentLayout.parentXInViewport + parentLayout.x,
+		parentYInViewport: parentLayout.parentYInViewport + parentLayout.y,
 	}
 }
