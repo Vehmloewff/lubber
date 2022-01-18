@@ -1,5 +1,4 @@
 /// <reference lib="dom" />
-//
 
 import { Context } from './context.ts'
 
