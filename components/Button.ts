@@ -42,10 +42,13 @@ export function Button(text: string | null, props: ButtonProps = {}) {
 
 	const label = Label(text, { bold: true })
 	const view = Container({
-		child: Padding({ paddingX: 10, paddingY: 2 }),
+		child: Padding({ paddingX: 10, paddingY: 2, child: label }),
 		borderRadius: 4,
 		cursor: 'pointer',
 	})
+
+	updateStyles()
+	render(view)
 
 	function computeColor(): ui.Color {
 		if (props.primary) {
@@ -56,8 +59,6 @@ export function Button(text: string | null, props: ButtonProps = {}) {
 		if (currentlyHovering) return ui.setAlpha('black', 0.15)
 		return ui.setAlpha('black', 0.1)
 	}
-
-	render(view)
 
 	function setText(newText: string) {
 		label.setText(newText)

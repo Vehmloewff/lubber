@@ -1,6 +1,7 @@
 export * from './Block.ts'
 export * from './Button.ts'
 export * from './Center.ts'
+export * from './Compress.ts'
 export * from './Container.ts'
 export * from './Flex.ts'
 export * from './FormInput.ts'

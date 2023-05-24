@@ -16,7 +16,6 @@ export function Padding(props: PaddingProps) {
 	const { $, render, use } = ui.makeComponent()
 
 	const view = SingleChildBlock({ child: props.child })
-	render(view)
 
 	let paddingTop = props.paddingTop ?? props.paddingY ?? props.padding ?? 0
 	let paddingLeft = props.paddingLeft ?? props.paddingX ?? props.padding ?? 0
@@ -31,6 +30,8 @@ export function Padding(props: PaddingProps) {
 			style.paddingBottom = ui.toRems(paddingBottom)
 		}),
 	)
+
+	render(view)
 
 	function setPaddingTop(newPaddingTop: number) {
 		paddingTop = newPaddingTop

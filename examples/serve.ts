@@ -1,5 +1,6 @@
-import appBundle from './app.bundle.ts'
-import { http, mediaTypes, rooter } from './deps.ts'
+import { open } from 'https://deno.land/x/open@v0.0.6/index.ts'
+import appBundle from './current_example.bundle.ts'
+import { http, mediaTypes, porter, rooter } from './deps.ts'
 
 const template = `
 	<!DOCTYPE html>
@@ -53,6 +54,8 @@ const livereloadRoute = rooter.makeRoute('/livereload.ws', ({ request }) => {
 	return response
 })
 
+// const port = Deno.env.get('PORT')
+
 http.serve(
 	rooter.makeHandler([
 		appTemplateRoute,
@@ -61,5 +64,10 @@ http.serve(
 		appFontBytesRoute,
 		livereloadRoute,
 	]),
-	{ port: 6100 },
+	{
+		// port,
+		onListen({ port }) {
+			console.log(`Running example at http://localhost:${port}`)
+		},
+	},
 )

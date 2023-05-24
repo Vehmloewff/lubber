@@ -6,3 +6,5 @@ export * as errors from 'https://deno.land/x/dtils@1.7.0/lib/errors.ts'
 export * as httpUtils from 'https://deno.land/x/dtils@1.7.0/lib/http.ts'
 
 export { env } from 'https://code.jikno.com/devops@0.1.0/lib/env.ts'
+export { open } from 'https://deno.land/x/open@v0.0.6/index.ts'
+export * as porter from 'https://deno.land/x/port@1.0.0/mod.ts'
