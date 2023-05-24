@@ -1,143 +1,77 @@
-import {
-	TextParams,
-	Widget,
-	widget,
-	Text,
-	Stack,
-	StyledBox,
-	SizedBox,
-	RGBA,
-	colors,
-	prepareTextWidget,
-	PressArea,
-	keystrokeListener,
-	DetachedZ,
-	DisablePressEvents,
-} from '../mod.ts'
+// TODO Update
+//
+// import { setAlpha } from '../color.ts'
+// import { KeyboardInputArea } from './KeyboardInputArea.ts'
+// import { Padding } from './Padding.ts'
+// import { SizedBox } from './SizedBox.ts'
+// import { Container } from './mod.ts'
 
-export interface TextFieldParams extends TextParams {
-	caretColor?: RGBA
-	/** if not set, the default caret is used */
-	caret?: Widget
-	focused?: boolean
-	onChange(newText: string, caretPOsition: number): unknown
-	onCaretChange(newCaretPosition: number): unknown
-	caretPosition: number
-	onNext?(): unknown
-	onDone?(): unknown
-}
+// export class TextField {
+// 	#inputOutlet = new Padding()
+// 		.paddingY(2)
+// 		.paddingX(10)
 
-export function TextField(text: string, params: TextFieldParams) {
-	const { build, $, beforeDestroy } = widget()
+// 	#container = new Container()
+// 		.borderRadius(6)
+// 		.border('blue', 2)
+// 		.cursor('text')
+// 		.child(this.#inputOutlet)
 
-	const caret = params.caret || DefaultCaret({ color: params.caretColor ?? colors.blue, height: params.lineHeight ?? params.size ?? 16 })
+// 	#view = new SizedBox()
+// 		.child(this.#container)
 
-	const measureText = (text: string) => prepareTextWidget(text, params).width
+// 	#isFocused = false
+// 	#isShowingPlaceholder = false
 
-	const unsubscribe = keystrokeListener({
-		onCharacter(character) {
-			if (params.focused)
-				params.onChange(
-					`${text.slice(0, params.caretPosition)}${character}${text.slice(params.caretPosition)}`,
-					params.caretPosition + 1
-				)
-		},
-		onArrowDown() {
-			if (params.caretPosition !== text.length) params.onCaretChange(text.length)
-		},
-		onArrowUp() {
-			if (params.caretPosition) params.onCaretChange(0)
-		},
-		onArrowLeft() {
-			if (params.caretPosition) params.onCaretChange(params.caretPosition - 1)
-		},
-		onArrowRight() {
-			if (params.caretPosition !== text.length) params.onCaretChange(params.caretPosition + 1)
-		},
-		onDelete() {
-			if (params.caretPosition)
-				params.onChange(`${text.slice(0, params.caretPosition - 1)}${text.slice(params.caretPosition)}`, params.caretPosition - 1)
-		},
-		onEnter() {
-			if (params.onDone) params.onDone()
-		},
-		onTab() {
-			if (params.onNext) params.onNext()
-		},
-	})
+// 	$ = this.#view.$
 
-	build(() => {
-		if (!params.focused) return Text(text, params)
+// 	constructor() {
+// 		this.#showPlaceholder()
 
-		return PressArea({
-			onPressedEvent(x) {
-				let lastStopDistance = 0
-				let position = 0
+// 		// TODO when container is clicked, focus input area if it is not already focused
+// 	}
 
-				while (position <= text.length) {
-					const thisStopDistance = position ? measureText(text.slice(0, position)) : 0
-					const midPoint = (thisStopDistance + lastStopDistance) / 2
+// 	setInput(input: KeyboardInputArea, height = 32) {
+// 		this.#inputOutlet.child(
+// 			input
+// 				.onChange((value) => this.#handleChange(value))
+// 				.onFocus(() => {
+// 					this.#isFocused = true
+// 					this.#applyLoudness()
+// 				})
+// 				.onBlur(() => {
+// 					this.#isFocused = false
+// 					this.#removeLoudness()
+// 				}),
+// 		)
 
-					if (x <= midPoint) {
-						position--
-						break
-					}
+// 		this.#view.height(height)
 
-					if (x <= thisStopDistance) break
+// 		return this
+// 	}
 
-					lastStopDistance = thisStopDistance
-					position++
-				}
+// 	#removeLoudness() {
+// 		this.#container.ring(null)
+// 	}
 
-				params.onCaretChange(position)
-			},
+// 	#applyLoudness() {
+// 		this.#container.ring(setAlpha('blue', 0.3), 4)
+// 	}
 
-			child: Stack({
-				shrinkTo: 0,
-				children: [
-					StyledBox({ cursor: 'text', child: Text(text, params) }),
-					{
-						left: measureText(text.slice(0, params.caretPosition)),
-						widget: DisablePressEvents({ child: DetachedZ({ child: caret }) }),
-					},
-				],
-			}),
-		})
-	})
+// 	#handleChange(value: string) {
+// 		if (!value.length && !this.#isShowingPlaceholder) this.#showPlaceholder()
+// 		if (value.length && this.#isShowingPlaceholder) this.#hidePlaceholder()
+// 	}
 
-	beforeDestroy(() => {
-		unsubscribe()
-	})
+// 	#showPlaceholder() {
+// 		this.#isShowingPlaceholder = true
 
-	return { $ }
-}
+// 		// TODO show placeholder
+// 	}
 
-export interface DefaultCaretParams {
-	color: RGBA
-	height: number
-}
+// 	#hidePlaceholder() {
+// 		this.#isShowingPlaceholder = false
 
-export function DefaultCaret(params: DefaultCaretParams) {
-	const { $, build, setState, beforeDestroy } = widget()
-
-	let blinkOn = true
-
-	build(() =>
-		StyledBox({
-			color: params.color,
-			borderRadius: 1.5,
-			child: SizedBox({
-				height: params.height,
-				width: 3,
-			}),
-			opacity: blinkOn ? 1 : 0,
-			transition: 'opacity 300ms',
-		})
-	)
-
-	const timeout = setInterval(() => setState(() => (blinkOn = !blinkOn)), 800)
-
-	beforeDestroy(() => clearInterval(timeout))
-
-	return { $ }
-}
+// 		// TODO show placeholder
+// 	}
+// }

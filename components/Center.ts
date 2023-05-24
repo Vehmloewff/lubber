@@ -1,27 +1,33 @@
-import { Widget } from '../mod.ts'
-import { elementWidget } from '../element-widget.ts'
-import { setPosition } from '../utils.ts'
+import { Container } from './Container.ts'
+import { Compress } from './Compress.ts'
+import { ui } from './deps.ts'
 
-export interface CenterParams {
-	child: Widget
+export interface CenterProps {
+	child?: ui.Component | null
 }
 
-export function Center(params: CenterParams) {
-	return elementWidget('div', ({ getChildPreferredSize }) => ({
-		async mount({ layout, mountChild, element }) {
-			setPosition(element, layout)
+/** Centers a single, mutable child in both directions. Child is automatically compressed */
+export function Center(props: CenterProps = {}) {
+	const { $, render, use } = ui.makeComponent()
 
-			const childPreferredSize = await getChildPreferredSize(params.child)
-			const childWidth = childPreferredSize.width ?? layout.width
-			const childHeight = childPreferredSize.height ?? layout.height
+	use(
+		new ui.Styler((style) => {
+			style.flexGrow = '1'
+			style.flexBasis = '0'
 
-			await mountChild(params.child, {
-				width: childWidth,
-				height: childHeight,
-				x: (layout.width - childWidth) / 2,
-				y: (layout.height - childHeight) / 2,
-			})
-		},
-		preferredSize: { width: null, height: null },
-	}))
+			style.display = 'flex'
+			style.alignItems = 'center'
+			style.justifyContent = 'center'
+		}),
+	)
+
+	const compressor = Compress({ child: props.child })
+
+	render(Container({ child: compressor }))
+
+	function setChild(child: ui.Component | null) {
+		compressor.setChild(child)
+	}
+
+	return { $, setChild }
 }

@@ -1,51 +1,77 @@
-import { Widget, BoxSides } from '../mod.ts'
-import { elementWidget } from '../element-widget.ts'
-import { carelessMounter } from '../utils.ts'
+import { SingleChildBlock } from './SingleChildBlock.ts'
+import { ui } from './deps.ts'
 
-export interface PaddingParams {
-	child?: Widget
-	padding?: number | Partial<BoxSides<number>>
+export interface PaddingProps {
+	child?: ui.Component | null
+	paddingTop?: number | null
+	paddingRight?: number | null
+	paddingBottom?: number | null
+	paddingLeft?: number | null
+	paddingX: number | null
+	paddingY?: number | null
+	padding?: number | null
 }
 
-const getSumX = (box: Partial<BoxSides<number>> | number | undefined) => {
-	if (box === undefined) return 0
+export function Padding(props: PaddingProps) {
+	const { $, render, use } = ui.makeComponent()
 
-	if (typeof box === 'number') return box * 2
+	const view = SingleChildBlock({ child: props.child })
+	render(view)
 
-	return (box.left ?? 0) + (box.right ?? 0)
-}
+	let paddingTop = props.paddingTop ?? props.paddingY ?? props.padding ?? 0
+	let paddingLeft = props.paddingLeft ?? props.paddingX ?? props.padding ?? 0
+	let paddingRight = props.paddingRight ?? props.paddingX ?? props.padding ?? 0
+	let paddingBottom = props.paddingBottom ?? props.paddingY ?? props.padding ?? 0
 
-const getSumY = (box: Partial<BoxSides<number>> | number | undefined) => {
-	if (box === undefined) return 0
+	const styler = use(
+		new ui.Styler((style) => {
+			style.paddingTop = ui.toRems(paddingTop)
+			style.paddingLeft = ui.toRems(paddingLeft)
+			style.paddingRight = ui.toRems(paddingRight)
+			style.paddingBottom = ui.toRems(paddingBottom)
+		}),
+	)
 
-	if (typeof box === 'number') return box * 2
+	function setPaddingTop(newPaddingTop: number) {
+		paddingTop = newPaddingTop
+		styler.restyle()
+	}
 
-	return (box.top ?? 0) + (box.bottom ?? 0)
-}
+	function setPaddingLeft(newPaddingLeft: number) {
+		paddingLeft = newPaddingLeft
+		styler.restyle()
+	}
 
-export function Padding(params: PaddingParams = {}) {
-	return elementWidget('div', async ({ getChildPreferredSize }) => {
-		const { carelessMountChild, preferredSize } = await carelessMounter(getChildPreferredSize, params.child)
-		const sumX = getSumX(params.padding)
-		const sumY = getSumY(params.padding)
+	function setPaddingBottom(newPaddingBottom: number) {
+		paddingBottom = newPaddingBottom
+		styler.restyle()
+	}
 
-		return {
-			mount({ mountChild, layout }) {
-				const padding = params.padding ?? 0
+	function setPaddingRight(newPaddingRight: number) {
+		paddingRight = newPaddingRight
+		styler.restyle()
+	}
 
-				return carelessMountChild(mountChild, {
-					x: layout.x + (typeof padding === 'number' ? padding : padding.left ?? 0),
-					y: layout.y + (typeof padding === 'number' ? padding : padding.top ?? 0),
-					width: layout.width - sumX,
-					height: layout.height - sumY,
-					parentXInViewport: layout.parentXInViewport,
-					parentYInViewport: layout.parentYInViewport,
-				})
-			},
-			preferredSize: {
-				width: preferredSize.width !== null ? preferredSize.width + sumX : null,
-				height: preferredSize.height !== null ? preferredSize.height + sumY : null,
-			},
-		}
-	})
+	function setPaddingX(newPaddingX: number) {
+		paddingRight = newPaddingX
+		paddingLeft = newPaddingX
+		styler.restyle()
+	}
+
+	function setPaddingY(newPaddingY: number) {
+		paddingTop = newPaddingY
+		paddingBottom = newPaddingY
+		styler.restyle()
+	}
+
+	function setPadding(newPadding: number) {
+		setPaddingY(newPadding)
+		setPaddingX(newPadding)
+	}
+
+	function setChild(child: ui.Component | null) {
+		view.setChild(child)
+	}
+
+	return { $, setPaddingTop, setPaddingRight, setPaddingBottom, setPaddingLeft, setPaddingX, setPaddingY, setPadding, setChild }
 }

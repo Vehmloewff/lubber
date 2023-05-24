@@ -1,88 +1,96 @@
-import { Widget, BoxSides, Size, Layout } from '../mod.ts'
-import { elementWidget } from '../element-widget.ts'
-import { setPosition, setThisParentXY } from '../utils.ts'
+import { Block } from './Block.ts'
+import { ui } from './deps.ts'
 
-export interface PositionedWidget {
-	top?: number
-	right?: number
-	left?: number
-	bottom?: number
-	widget: Widget
+export interface StackProps<CT extends ui.Component> {
+	children: CT[]
 }
 
-export interface StackParams {
-	children: (Widget | PositionedWidget)[]
-	shrinkTo?: number
+export interface Stack<CT> extends ui.Component, ui.Generics<CT> {
 }
 
-export function Stack(params: StackParams) {
-	return elementWidget('div', async ({ getChildPreferredSize }) => {
-		let shrinkChildPreferredSize: Size = { width: null, height: null }
+export function Stack<CT extends ui.Component>(props: StackProps<CT>): Stack<CT> {
+	const { $, render, use } = ui.makeComponent()
 
-		if (params.shrinkTo !== undefined) {
-			const childOrPosition = params.children[params.shrinkTo]
+	use(
+		new ui.Styler((style) => {
+			style.position = 'relative'
+		}),
+	)
 
-			// deno-lint-ignore no-explicit-any
-			if (childOrPosition && typeof (childOrPosition as any)?.$?.mount === 'function') {
-				const child = childOrPosition as Widget
-				shrinkChildPreferredSize = await getChildPreferredSize(child)
-			}
-		}
+	const generics = use(ui.makeGenerics<CT>())
+	generics.push(...props.children)
 
-		return {
-			async mount({ element, layout, mountChild }) {
-				setPosition(element, layout)
+	render(Block())
 
-				for (const childIndexString in params.children) {
-					const childIndex = parseInt(childIndexString)
-					const childOrPosition = params.children[childIndex]
-
-					// deno-lint-ignore no-explicit-any
-					const childIsUserPositioned = typeof (childOrPosition as any)?.$?.mount !== 'function'
-					const child = childIsUserPositioned ? (childOrPosition as PositionedWidget).widget : (childOrPosition as Widget)
-					const position: Partial<BoxSides<number>> = childIsUserPositioned ? (childOrPosition as PositionedWidget) : {}
-
-					const preferredSize = childIndex === params.shrinkTo ? shrinkChildPreferredSize : await getChildPreferredSize(child)
-
-					const [x, width] = evaluateX(preferredSize, position, layout)
-					const [y, height] = evaluateY(preferredSize, position, layout)
-
-					await mountChild(child, {
-						width,
-						height,
-						x,
-						y,
-						...setThisParentXY(layout),
-					})
-				}
-			},
-			preferredSize: shrinkChildPreferredSize,
-		}
-	})
+	return { $, ...generics }
 }
 
-function evaluateX(preferredSize: Size, position: Partial<BoxSides<number>>, parentLayout: Layout) {
-	if (preferredSize.width === null) {
-		const left = position.left ?? 0
-		const width = position.right === undefined ? parentLayout.width : parentLayout.width - position.right
+export interface StackItemProps {
+	child: ui.Component
+	left?: number | null
+	right?: number | null
+	top?: number | null
+	bottom?: number | null
+	inset?: number | null
+}
 
-		return [left, width]
-	} else {
-		const left = position.left ?? (position.right !== undefined ? parentLayout.width - position.right - preferredSize.width : 0)
+export interface StackItem {
+	$: ui.ComponentInternals
+	setTop: (newTop: number | null) => void
+	setRight: (newRight: number | null) => void
+	setBottom: (newBottom: number | null) => void
+	setLeft: (newLeft: number | null) => void
+	setChild: (child: ui.Component | null) => void
+}
 
-		return [left, preferredSize.width]
+export function StackItem(props: StackItemProps): StackItem {
+	const { $, render, use } = ui.makeComponent()
+
+	let top = props.top ?? props.inset ?? null
+	let right = props.right ?? props.inset ?? null
+	let bottom = props.bottom ?? props.inset ?? null
+	let left = props.left ?? props.inset ?? null
+
+	const styler = use(
+		new ui.Styler((style) => {
+			style.position = 'absolute'
+			style.top = top !== null ? ui.toRems(top) : ''
+			style.right = right !== null ? ui.toRems(right) : ''
+			style.bottom = bottom !== null ? ui.toRems(bottom) : ''
+			style.left = left !== null ? ui.toRems(left) : ''
+		}),
+	)
+
+	const generics = use(new ui.SingleChildGenerics())
+
+	const block = new ui.ElementComponent()
+	render(block)
+
+	generics.setChild(props.child)
+
+	function setTop(newTop: number | null) {
+		top = newTop
+		styler.restyle()
 	}
-}
 
-function evaluateY(preferredSize: Size, position: Partial<BoxSides<number>>, parentLayout: Layout) {
-	if (preferredSize.height === null) {
-		const top = position.top ?? 0
-		const height = position.bottom === undefined ? parentLayout.height : parentLayout.height - position.bottom
-
-		return [top, height]
-	} else {
-		const top = position.top ?? (position.bottom !== undefined ? parentLayout.height - position.bottom - preferredSize.height : 0)
-
-		return [top, preferredSize.height]
+	function setRight(newRight: number | null) {
+		right = newRight
+		styler.restyle()
 	}
+
+	function setBottom(newBottom: number | null) {
+		bottom = newBottom
+		styler.restyle()
+	}
+
+	function setLeft(newLeft: number | null) {
+		left = newLeft
+		styler.restyle()
+	}
+
+	function setChild(child: ui.Component | null) {
+		generics.setChild(child)
+	}
+
+	return { $, setTop, setRight, setBottom, setLeft, setChild }
 }

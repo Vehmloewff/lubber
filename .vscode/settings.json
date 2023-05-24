@@ -1,6 +1,4 @@
 {
 	"deno.enable": true,
-	"deno.lint": true,
-	"deno.unstable": true,
-	"liveServer.settings.multiRootWorkspaceName": "gui"
+	"deno.unstable": true
 }

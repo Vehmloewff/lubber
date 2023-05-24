@@ -1,81 +1,45 @@
-import { Widget, Size } from '../mod.ts'
-import { elementWidget } from '../element-widget.ts'
-import { setPosition } from '../utils.ts'
+import { ui } from './deps.ts'
 
-export interface SizedBoxParams {
-	width?: number
-	maxWidth?: number
-	height?: number
-	maxHeight?: number
-	child?: Widget
+export interface SizedBoxProps {
+	child?: ui.Component | null
+	width?: number | null
+	height?: number | null
 }
 
-export function SizedBox(params: SizedBoxParams = {}) {
-	return elementWidget('div', async ({ getChildPreferredSize }) => {
-		const childPreferredSize: Size = params.child ? await getChildPreferredSize(params.child) : { width: null, height: null }
-		const preferredSize: Size = {
-			width: getWidth(params, childPreferredSize.width),
-			height: getHeight(params, childPreferredSize.height),
-		}
+export function SizedBox(props: SizedBoxProps = {}) {
+	const { $, render, use } = ui.makeComponent()
 
-		return {
-			async mount({ element, layout, mountChild }) {
-				setPosition(element, layout)
+	let width = props.width ?? null
+	let height = props.height ?? null
 
-				if (params.child)
-					await mountChild(params.child, {
-						width:
-							childPreferredSize.width !== null
-								? childPreferredSize.width <= layout.width
-									? childPreferredSize.width
-									: layout.width
-								: layout.width,
-						height:
-							childPreferredSize.height !== null
-								? childPreferredSize.height <= layout.height
-									? childPreferredSize.height
-									: layout.height
-								: layout.height,
+	const generics = use(new ui.SingleChildGenerics())
 
-						x: 0,
-						y: 0,
-					})
-			},
-			preferredSize,
-		}
-	})
-}
+	const styler = use(
+		new ui.Styler((style) => {
+			if (width === null) style.width = '100%'
+			else style.width = ui.toRems(width)
 
-function getWidth(params: SizedBoxParams, childPreferredWidth: null | number) {
-	if (params.width) {
-		return params.width
+			if (height === null) style.height = '100%'
+			else style.height = ui.toRems(height)
+		}),
+	)
+
+	render(new ui.ElementComponent())
+	generics.setChild(props.child || null)
+
+	function setHeight(newHeight: number | null) {
+		height = newHeight
+		styler.restyle()
 	}
 
-	if (params.maxWidth) {
-		if (childPreferredWidth === null) return params.maxWidth
-		if (childPreferredWidth > params.maxWidth) return params.maxWidth
-
-		return childPreferredWidth
+	function setWidth(newWidth: number | null) {
+		width = newWidth
+		styler.restyle()
 	}
 
-	if (childPreferredWidth) return childPreferredWidth
-
-	return null
-}
-
-function getHeight(params: SizedBoxParams, childPreferredHeight: null | number) {
-	if (params.height) {
-		return params.height
+	function setChild(child: ui.Component | null) {
+		generics.setChild(child)
 	}
 
-	if (params.maxHeight) {
-		if (childPreferredHeight === null) return params.maxHeight
-		if (childPreferredHeight > params.maxHeight) return params.maxHeight
-
-		return childPreferredHeight
-	}
-
-	if (childPreferredHeight) return childPreferredHeight
-
-	return null
+	return { $, setHeight, setWidth, setChild }
 }
