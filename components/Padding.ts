@@ -1,8 +1,8 @@
 import { SingleChildBlock } from './SingleChildBlock.ts'
-import { ui } from './deps.ts'
+import { Component, makeComponent, Styler, toRems } from './deps.ts'
 
 export interface PaddingProps {
-	child?: ui.Component | null
+	child?: Component | null
 	paddingTop?: number | null
 	paddingRight?: number | null
 	paddingBottom?: number | null
@@ -13,7 +13,7 @@ export interface PaddingProps {
 }
 
 export function Padding(props: PaddingProps) {
-	const { $, render, use } = ui.makeComponent()
+	const { $, render, use } = makeComponent()
 
 	const view = SingleChildBlock({ child: props.child })
 
@@ -23,11 +23,11 @@ export function Padding(props: PaddingProps) {
 	let paddingBottom = props.paddingBottom ?? props.paddingY ?? props.padding ?? 0
 
 	const styler = use(
-		new ui.Styler((style) => {
-			style.paddingTop = ui.toRems(paddingTop)
-			style.paddingLeft = ui.toRems(paddingLeft)
-			style.paddingRight = ui.toRems(paddingRight)
-			style.paddingBottom = ui.toRems(paddingBottom)
+		new Styler((style) => {
+			style.paddingTop = toRems(paddingTop)
+			style.paddingLeft = toRems(paddingLeft)
+			style.paddingRight = toRems(paddingRight)
+			style.paddingBottom = toRems(paddingBottom)
 		}),
 	)
 
@@ -70,7 +70,7 @@ export function Padding(props: PaddingProps) {
 		setPaddingX(newPadding)
 	}
 
-	function setChild(child: ui.Component | null) {
+	function setChild(child: Component | null) {
 		view.setChild(child)
 	}
 

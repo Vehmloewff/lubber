@@ -1,17 +1,17 @@
 import { Container } from './Container.ts'
 import { Compress } from './Compress.ts'
-import { ui } from './deps.ts'
+import { Component, makeComponent, Styler } from './deps.ts'
 
 export interface CenterProps {
-	child?: ui.Component | null
+	child?: Component | null
 }
 
 /** Centers a single, mutable child in both directions. Child is automatically compressed */
 export function Center(props: CenterProps = {}) {
-	const { $, render, use } = ui.makeComponent()
+	const { $, render, use } = makeComponent()
 
 	use(
-		new ui.Styler((style) => {
+		new Styler((style) => {
 			style.flexGrow = '1'
 			style.flexBasis = '0'
 
@@ -25,7 +25,7 @@ export function Center(props: CenterProps = {}) {
 
 	render(Container({ child: compressor }))
 
-	function setChild(child: ui.Component | null) {
+	function setChild(child: Component | null) {
 		compressor.setChild(child)
 	}
 

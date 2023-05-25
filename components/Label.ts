@@ -1,7 +1,7 @@
-import { ui } from './deps.ts'
+import { Color, ElementComponent, makeComponent, stringifyColor, Styler, toRems } from './deps.ts'
 
 export interface LabelProps {
-	color?: ui.Color
+	color?: Color
 	underline?: boolean
 	italic?: boolean
 	bold?: boolean
@@ -11,9 +11,9 @@ export interface LabelProps {
 }
 
 export function Label(text: string | null, props: LabelProps = {}) {
-	const { $, render, use } = ui.makeComponent()
+	const { $, render, use } = makeComponent()
 
-	const element = new ui.ElementComponent()
+	const element = new ElementComponent()
 
 	let color = props.color ?? [0, 0, 0, 1]
 	let underline = props.underline ?? false
@@ -29,16 +29,16 @@ export function Label(text: string | null, props: LabelProps = {}) {
 	}
 
 	const styler = use(
-		new ui.Styler((style) => {
+		new Styler((style) => {
 			style.fontFamily = '"Source Sans Pro", sans-serif'
 			style.userSelect = 'none'
 			style.whiteSpace = 'nowrap'
 
-			style.color = ui.stringifyColor(color)
+			style.color = stringifyColor(color)
 			style.textDecoration = underline ? 'underline' : 'none'
 			style.fontStyle = italic ? 'italic' : 'normal'
 			style.fontWeight = bold ? '700' : '400'
-			style.fontSize = ui.toRems(fontSize)
+			style.fontSize = toRems(fontSize)
 
 			const transitions: string[] = []
 			for (const [key, value] of transitions) {
@@ -59,7 +59,7 @@ export function Label(text: string | null, props: LabelProps = {}) {
 		element.htmlElement.textContent = newText
 	}
 
-	function setColor(newColor: ui.Color) {
+	function setColor(newColor: Color) {
 		color = newColor
 		styler.restyle()
 	}

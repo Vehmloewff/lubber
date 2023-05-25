@@ -1,3 +1,3 @@
-export * as ui from '../ui/mod.ts'
-export * as theme from '../theme/mod.ts'
-export * as color from '../color.ts'
+export * from '../ui/mod.ts'
+export * from '../theme/mod.ts'
+export * from '../color.ts'

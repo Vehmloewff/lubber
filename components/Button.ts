@@ -1,7 +1,8 @@
+import { Color, setAlpha } from '../color.ts'
 import { Container } from './Container.ts'
 import { Label } from './Label.ts'
 import { Padding } from './Padding.ts'
-import { ui } from './deps.ts'
+import { currentTheme, ElementListeners, makeComponent } from './deps.ts'
 
 export interface ButtonProps {
 	onPressed?: VoidFunction | null
@@ -10,10 +11,10 @@ export interface ButtonProps {
 
 /** A simple button component. Only takes up the space it needs. */
 export function Button(text: string | null, props: ButtonProps = {}) {
-	const { $, render, use } = ui.makeComponent()
+	const { $, render, use } = makeComponent()
 
 	use(
-		new ui.ElementListeners({
+		new ElementListeners({
 			onPressed() {
 				if (props.onPressed) props.onPressed()
 			},
@@ -32,8 +33,12 @@ export function Button(text: string | null, props: ButtonProps = {}) {
 		view.setColor(computeColor())
 		label.setColor(props.primary ? 'white' : 'black')
 
-		if (currentlyPressing) view.setRing(props.primary ? ui.setAlpha('blue', 0.3) : ui.setAlpha('black', 0.05), 3)
-		else view.setRing(null)
+		if (currentlyPressing) {
+			view.setRing(
+				props.primary ? setAlpha(currentTheme.get().primary, 0.3) : setAlpha(currentTheme.get().foreground, 0.05),
+				3,
+			)
+		} else view.setRing(null)
 	}
 
 	let currentlyPressing = false
@@ -49,14 +54,14 @@ export function Button(text: string | null, props: ButtonProps = {}) {
 	updateStyles()
 	render(view)
 
-	function computeColor(): ui.Color {
+	function computeColor(): Color {
 		if (props.primary) {
-			if (currentlyHovering) return ui.setAlpha('blue', 0.9)
-			return 'blue'
+			if (currentlyHovering) return setAlpha(currentTheme.get().primary, 0.9)
+			return currentTheme.get().primary
 		}
 
-		if (currentlyHovering) return ui.setAlpha('black', 0.15)
-		return ui.setAlpha('black', 0.1)
+		if (currentlyHovering) return setAlpha(currentTheme.get().foreground, 0.15)
+		return setAlpha(currentTheme.get().foreground, 0.1)
 	}
 
 	function setText(newText: string) {

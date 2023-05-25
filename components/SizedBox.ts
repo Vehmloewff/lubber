@@ -1,30 +1,30 @@
-import { ui } from './deps.ts'
+import { Component, ElementComponent, makeComponent, SingleChildGenerics, Styler, toRems } from './deps.ts'
 
 export interface SizedBoxProps {
-	child?: ui.Component | null
+	child?: Component | null
 	width?: number | null
 	height?: number | null
 }
 
 export function SizedBox(props: SizedBoxProps = {}) {
-	const { $, render, use } = ui.makeComponent()
+	const { $, render, use } = makeComponent()
 
 	let width = props.width ?? null
 	let height = props.height ?? null
 
-	const generics = use(new ui.SingleChildGenerics())
+	const generics = use(new SingleChildGenerics())
 
 	const styler = use(
-		new ui.Styler((style) => {
+		new Styler((style) => {
 			if (width === null) style.width = '100%'
-			else style.width = ui.toRems(width)
+			else style.width = toRems(width)
 
 			if (height === null) style.height = '100%'
-			else style.height = ui.toRems(height)
+			else style.height = toRems(height)
 		}),
 	)
 
-	render(new ui.ElementComponent())
+	render(new ElementComponent())
 	generics.setChild(props.child || null)
 
 	function setHeight(newHeight: number | null) {
@@ -37,7 +37,7 @@ export function SizedBox(props: SizedBoxProps = {}) {
 		styler.restyle()
 	}
 
-	function setChild(child: ui.Component | null) {
+	function setChild(child: Component | null) {
 		generics.setChild(child)
 	}
 

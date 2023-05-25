@@ -1,5 +1,5 @@
 import { Block } from './Block.ts'
-import { ui } from './deps.ts'
+import { LifecycleListeners, makeComponent, makeElementUser } from './deps.ts'
 
 export interface RenderElementProps {
 	element: HTMLElement
@@ -7,12 +7,12 @@ export interface RenderElementProps {
 }
 
 export function RenderElement(props: RenderElementProps) {
-	const { $, render, use } = ui.makeComponent()
+	const { $, render, use } = makeComponent()
 
-	use(ui.makeElementUser((element) => element.appendChild(props.element)))
+	use(makeElementUser((element) => element.appendChild(props.element)))
 
 	use(
-		new ui.LifecycleListeners({
+		new LifecycleListeners({
 			onDestroy() {
 				if (props.onDestroy) props.onDestroy()
 			},

@@ -1,5 +1,5 @@
 import { Block } from './Block.ts'
-import { ui } from './deps.ts'
+import { LifecycleListeners, makeComponent, makeElementUser } from './deps.ts'
 
 export type ImageFit =
 	| 'contain'
@@ -26,7 +26,7 @@ export interface ImageProps {
 }
 
 export function Image(url: string | null, props: ImageProps = {}) {
-	const { $, render, use } = ui.makeComponent()
+	const { $, render, use } = makeComponent()
 
 	let element: HTMLElement | null = null
 	let img: HTMLImageElement | null = null
@@ -34,10 +34,10 @@ export function Image(url: string | null, props: ImageProps = {}) {
 	let fit = props.fit || 'scale_down'
 	let position = props.position || 'top_left'
 
-	use(ui.makeElementUser((e) => element = e))
+	use(makeElementUser((e) => element = e))
 
 	use(
-		new ui.LifecycleListeners({
+		new LifecycleListeners({
 			onMounted() {
 				setUrl(url)
 			},

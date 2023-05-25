@@ -1,15 +1,15 @@
 import { SingleChildBlock } from './SingleChildBlock.ts'
-import { ui } from './deps.ts'
+import { Color, Component, makeComponent, stringifyColor, Styler, toRems } from './deps.ts'
 
 export interface ContainerProps {
-	child?: ui.Component | null
-	color?: ui.Color
+	child?: Component | null
+	color?: Color
 	borderRadius?: number
-	borderColor?: ui.Color
+	borderColor?: Color
 	borderWidth?: number
 	borderStyle?: string
 	disableColorTransition?: boolean
-	ringColor?: ui.Color | null
+	ringColor?: Color | null
 	ringWidth?: number
 	cursor?: string
 	filters?: string[]
@@ -19,18 +19,18 @@ export interface ContainerProps {
 
 /** Renders block that can be easily styled. May contain a single, mutable child */
 export function Container(props: ContainerProps = {}) {
-	const { $, render, use } = ui.makeComponent()
+	const { $, render, use } = makeComponent()
 
 	const styler = use(
-		new ui.Styler((style) => {
+		new Styler((style) => {
 			// We flex here so that child elements that don't try to become "blocks" will stay at their smallest size
 			style.display = 'flex'
 			style.alignItems = 'start'
 
-			style.backgroundColor = ui.stringifyColor(color)
-			style.borderRadius = ui.toRems(borderRadius)
-			style.borderColor = ui.stringifyColor(borderColor)
-			style.borderWidth = ui.toRems(borderWidth)
+			style.backgroundColor = stringifyColor(color)
+			style.borderRadius = toRems(borderRadius)
+			style.borderColor = stringifyColor(borderColor)
+			style.borderWidth = toRems(borderWidth)
 			style.borderStyle = borderStyle
 
 			const transitionStrings: string[] = []
@@ -41,7 +41,7 @@ export function Container(props: ContainerProps = {}) {
 			style.transition = transitionStrings.join(', ')
 
 			if (ringColor) {
-				style.boxShadow = `0px 0px 0px ${ui.toRems(ringWidth)} ${ui.stringifyColor(ringColor)}`
+				style.boxShadow = `0px 0px 0px ${toRems(ringWidth)} ${stringifyColor(ringColor)}`
 			} else style.boxShadow = ''
 
 			style.cursor = cursor
@@ -74,7 +74,7 @@ export function Container(props: ContainerProps = {}) {
 
 	const transitions = new Map<string, number>()
 
-	function setColor(newColor: ui.Color) {
+	function setColor(newColor: Color) {
 		color = newColor
 		styler.restyle()
 	}
@@ -84,7 +84,7 @@ export function Container(props: ContainerProps = {}) {
 		styler.restyle()
 	}
 
-	function setBorder(newColor: ui.Color, newWidth: number) {
+	function setBorder(newColor: Color, newWidth: number) {
 		borderColor = newColor
 		borderWidth = newWidth
 		styler.restyle()
@@ -95,7 +95,7 @@ export function Container(props: ContainerProps = {}) {
 		styler.restyle()
 	}
 
-	function setRing(newColor: ui.Color | null, newWidth = 3) {
+	function setRing(newColor: Color | null, newWidth = 3) {
 		ringColor = newColor
 		ringWidth = newWidth
 		styler.restyle()
@@ -121,7 +121,7 @@ export function Container(props: ContainerProps = {}) {
 		styler.restyle()
 	}
 
-	function setChild(child: ui.Component | null) {
+	function setChild(child: Component | null) {
 		view.setChild(child)
 	}
 

@@ -1,5 +1,5 @@
 import { Block } from './Block.ts'
-import { ui } from './deps.ts'
+import { Component, ElementComponent, makeComponent, makeGenerics, SingleChildGenerics, Styler, toRems } from './deps.ts'
 
 export type FlexDirection = 'row' | 'column'
 
@@ -14,7 +14,7 @@ export type FlexJustify =
 	| 'stretch'
 
 export interface FlexProps {
-	children: ui.Component[]
+	children: Component[]
 	gap?: number
 	align?: FlexAlign
 	justify?: FlexJustify
@@ -22,18 +22,18 @@ export interface FlexProps {
 }
 
 export function Flex(direction: FlexDirection, props: FlexProps) {
-	const { $, render, use } = ui.makeComponent()
+	const { $, render, use } = makeComponent()
 
 	const styler = use(
-		new ui.Styler((style) => {
+		new Styler((style) => {
 			style.display = 'flex'
 			style.flexDirection = direction
-			style.gap = ui.toRems(gap)
+			style.gap = toRems(gap)
 			style.alignItems = align
 			style.justifyContent = justify
 		}),
 	)
-	const generics = use(ui.makeGenerics())
+	const generics = use(makeGenerics())
 
 	render(Block())
 
@@ -67,29 +67,29 @@ export function Flex(direction: FlexDirection, props: FlexProps) {
 }
 
 export interface FlexItemProps {
-	child: ui.Component
+	child: Component
 	shrink?: boolean
 	expand?: boolean | number
 }
 
 export function FlexItem(props: FlexItemProps) {
-	const { $, render, use } = ui.makeComponent()
+	const { $, render, use } = makeComponent()
 
-	const generics = use(new ui.SingleChildGenerics())
+	const generics = use(new SingleChildGenerics())
 	const styler = use(
-		new ui.Styler((style) => {
+		new Styler((style) => {
 			style.flexBasis = '0'
 			style.flexGrow = `${expansionRate === true ? 1 : expansionRate === false ? 0 : expansionRate}`
 			style.flexShrink = shrink ? '1' : '0'
 		}),
 	)
 
-	render(new ui.ElementComponent())
+	render(new ElementComponent())
 
 	let expansionRate = props.expand ?? false
 	let shrink = props.shrink ?? false
 
-	function setChild(child: ui.Component | null) {
+	function setChild(child: Component | null) {
 		generics.setChild(child)
 	}
 
