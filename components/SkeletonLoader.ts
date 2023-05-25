@@ -1,6 +1,14 @@
-import { setAlpha, stringifyColor } from '../color.ts'
 import { Block } from './Block.ts'
-import { Animator, currentTheme, easing, LifecycleListeners, makeAnimationMounter, makeComponent } from './deps.ts'
+import {
+	Animator,
+	currentTheme,
+	easing,
+	LifecycleListeners,
+	makeAnimationMounter,
+	makeComponent,
+	setAlpha,
+	stringifyColor,
+} from './deps.ts'
 
 export function SkeletonLoader(props: MakeSlidingPulseAnimationParams = {}) {
 	const { $, render, use } = makeComponent()

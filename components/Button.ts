@@ -1,8 +1,7 @@
-import { Color, setAlpha } from '../color.ts'
 import { Container } from './Container.ts'
 import { Label } from './Label.ts'
 import { Padding } from './Padding.ts'
-import { currentTheme, ElementListeners, makeComponent } from './deps.ts'
+import { Color, currentTheme, ElementListeners, makeComponent, setAlpha } from './deps.ts'
 
 export interface ButtonProps {
 	onPressed?: VoidFunction | null
