@@ -8,4 +8,4 @@ function MyComponent() {
 	return { $ }
 }
 
-L.renderAtRoot(MyComponent())
+L.renderDom(MyComponent())

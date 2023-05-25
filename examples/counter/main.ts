@@ -17,4 +17,4 @@ function Counter() {
 	return { $ }
 }
 
-L.renderAtRoot(Counter())
+L.renderDom(Counter())
