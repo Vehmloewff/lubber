@@ -12,7 +12,7 @@ function Counter() {
 		},
 	})
 
-	render(L.Compress({ child: button }))
+	render(L.Center({ child: button }))
 
 	return { $ }
 }

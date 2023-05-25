@@ -1,6 +1,7 @@
-import { open } from 'https://deno.land/x/open@v0.0.6/index.ts'
 import appBundle from './current_example.bundle.ts'
-import { http, mediaTypes, porter, rooter } from './deps.ts'
+import { http, mediaTypes, rooter } from './deps.ts'
+
+const example = Deno.args[0] || 'Unnamed'
 
 const template = `
 	<!DOCTYPE html>
@@ -9,7 +10,7 @@ const template = `
 		<meta charset="UTF-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Gleam</title>
+		<title>${example}</title>
 
 		<link href="/fonts.css" rel="stylesheet" />
 		<script src="/bundle.js" defer></script>
@@ -67,7 +68,7 @@ http.serve(
 	{
 		// port,
 		onListen({ port }) {
-			console.log(`Running example at http://localhost:${port}`)
+			console.log(`Running example "${example}" at http://localhost:${port}`)
 		},
 	},
 )

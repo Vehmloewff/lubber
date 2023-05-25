@@ -28,7 +28,7 @@ export async function example(args: string[]) {
 	})
 
 	// Serve up the current example
-	await dtils.sh('deno run -A --watch examples/serve.ts')
+	await dtils.sh(`deno run -A --watch examples/serve.ts ${example}`)
 }
 
 async function readDir(dir: string) {
