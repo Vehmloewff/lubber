@@ -1,5 +1,6 @@
 # Lubber
 
-> A library for building high-precision user interfaces
+A library for building high-precision user interfaces.
 
-See the `examples` directory for usage examples.
+- [Docs](./docs/main.md)
+- See the `examples` directory for usage examples.
