@@ -1,23 +1,33 @@
 import { Block } from './Block.ts'
-import { ui } from './deps.ts'
+import {
+	Component,
+	ComponentInternals,
+	ElementComponent,
+	Generics,
+	makeComponent,
+	makeGenerics,
+	SingleChildGenerics,
+	Styler,
+	toRems,
+} from './deps.ts'
 
-export interface StackProps<CT extends ui.Component> {
+export interface StackProps<CT extends Component> {
 	children: CT[]
 }
 
-export interface Stack<CT> extends ui.Component, ui.Generics<CT> {
+export interface Stack<CT> extends Component, Generics<CT> {
 }
 
-export function Stack<CT extends ui.Component>(props: StackProps<CT>): Stack<CT> {
-	const { $, render, use } = ui.makeComponent()
+export function Stack<CT extends Component>(props: StackProps<CT>): Stack<CT> {
+	const { $, render, use } = makeComponent()
 
 	use(
-		new ui.Styler((style) => {
+		new Styler((style) => {
 			style.position = 'relative'
 		}),
 	)
 
-	const generics = use(ui.makeGenerics<CT>())
+	const generics = use(makeGenerics<CT>())
 	generics.push(...props.children)
 
 	render(Block())
@@ -26,7 +36,7 @@ export function Stack<CT extends ui.Component>(props: StackProps<CT>): Stack<CT>
 }
 
 export interface StackItemProps {
-	child: ui.Component
+	child: Component
 	left?: number | null
 	right?: number | null
 	top?: number | null
@@ -35,16 +45,16 @@ export interface StackItemProps {
 }
 
 export interface StackItem {
-	$: ui.ComponentInternals
+	$: ComponentInternals
 	setTop: (newTop: number | null) => void
 	setRight: (newRight: number | null) => void
 	setBottom: (newBottom: number | null) => void
 	setLeft: (newLeft: number | null) => void
-	setChild: (child: ui.Component | null) => void
+	setChild: (child: Component | null) => void
 }
 
 export function StackItem(props: StackItemProps): StackItem {
-	const { $, render, use } = ui.makeComponent()
+	const { $, render, use } = makeComponent()
 
 	let top = props.top ?? props.inset ?? null
 	let right = props.right ?? props.inset ?? null
@@ -52,18 +62,18 @@ export function StackItem(props: StackItemProps): StackItem {
 	let left = props.left ?? props.inset ?? null
 
 	const styler = use(
-		new ui.Styler((style) => {
+		new Styler((style) => {
 			style.position = 'absolute'
-			style.top = top !== null ? ui.toRems(top) : ''
-			style.right = right !== null ? ui.toRems(right) : ''
-			style.bottom = bottom !== null ? ui.toRems(bottom) : ''
-			style.left = left !== null ? ui.toRems(left) : ''
+			style.top = top !== null ? toRems(top) : ''
+			style.right = right !== null ? toRems(right) : ''
+			style.bottom = bottom !== null ? toRems(bottom) : ''
+			style.left = left !== null ? toRems(left) : ''
 		}),
 	)
 
-	const generics = use(new ui.SingleChildGenerics())
+	const generics = use(new SingleChildGenerics())
 
-	const block = new ui.ElementComponent()
+	const block = new ElementComponent()
 	render(block)
 
 	generics.setChild(props.child)
@@ -88,7 +98,7 @@ export function StackItem(props: StackItemProps): StackItem {
 		styler.restyle()
 	}
 
-	function setChild(child: ui.Component | null) {
+	function setChild(child: Component | null) {
 		generics.setChild(child)
 	}
 

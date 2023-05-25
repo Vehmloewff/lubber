@@ -1,13 +1,13 @@
-import { ui } from './deps.ts'
+import { ElementComponent, makeComponent, Styler } from './deps.ts'
 
 /** A basic block component. Block components always try to expand to take up all space they are given. */
 export function Block() {
-	const { $, render, use } = ui.makeComponent()
+	const { $, render, use } = makeComponent()
 
-	const view = new ui.ElementComponent()
+	const view = new ElementComponent()
 
 	use(
-		new ui.Styler((style) => {
+		new Styler((style) => {
 			style.width = '100%'
 			style.height = '100%'
 		}),

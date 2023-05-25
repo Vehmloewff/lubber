@@ -1,9 +1,9 @@
-import { ui } from './deps.ts'
+import { Animator, Component, LifecycleListeners, makeAnimationMounter, makeComponent } from './deps.ts'
 
 export interface TransitionProps {
-	child: ui.Component
-	in?: ui.Animator
-	out?: ui.Animator
+	child: Component
+	in?: Animator
+	out?: Animator
 }
 
 /**
@@ -11,13 +11,13 @@ export interface TransitionProps {
  *
  * NOTE: Does not create an element, but instead directly renders `child` */
 export function Transition(props: TransitionProps) {
-	const { $, render, use } = ui.makeComponent()
+	const { $, render, use } = makeComponent()
 
-	const inMounter = props.in ? use(ui.makeAnimationMounter(props.in)) : null
-	const outMounter = props.out ? use(ui.makeAnimationMounter(props.out)) : null
+	const inMounter = props.in ? use(makeAnimationMounter(props.in)) : null
+	const outMounter = props.out ? use(makeAnimationMounter(props.out)) : null
 
 	use(
-		new ui.LifecycleListeners({
+		new LifecycleListeners({
 			onMounted() {
 				inMounter?.start()
 			},
