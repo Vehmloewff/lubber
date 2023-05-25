@@ -60,4 +60,4 @@ function Counter() {
 }
 ```
 
-Once you have built your components, you can render them using a [loader](./loaders.md).
+Once you have built your components, you can render them using a [renderers](./renderers.md).
