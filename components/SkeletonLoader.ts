@@ -1,5 +1,5 @@
-import { ui } from './deps.ts'
-import { theme } from './globals.ts'
+import { Block } from './Block.ts'
+import { color, theme, ui } from './deps.ts'
 
 export function SkeletonLoader(props: MakeSlidingPulseAnimationParams = {}) {
 	const { $, render, use } = ui.makeComponent()
@@ -23,7 +23,7 @@ export function SkeletonLoader(props: MakeSlidingPulseAnimationParams = {}) {
 		}),
 	)
 
-	render(ui.Block())
+	render(Block())
 
 	return { $ }
 }
@@ -38,7 +38,7 @@ export function makeSlidingPulseAnimation(params: MakeSlidingPulseAnimationParam
 	return (node) => {
 		const computed = getComputedStyle(node)
 
-		const baseColor = params.useBackgroundColor ? theme.get().background : theme.get().foreground
+		const baseColor = params.useBackgroundColor ? theme.currentTheme.get().background : theme.currentTheme.get().foreground
 		const first = `rgba(0,0,0,0) 0%`
 		const last = `rgba(0,0,0,0) 100%`
 		const oneThird = 1 / 3
@@ -52,7 +52,7 @@ export function makeSlidingPulseAnimation(params: MakeSlidingPulseAnimationParam
 				const progressT = t < oneThird ? 0 : t > twoThirds ? 1 : ui.easing.quartOut((t - oneThird) * 3)
 				const opacityT = t <= oneThird ? t * 3 : t >= twoThirds ? 1 - ((t - twoThirds) * 3) : 1
 
-				return { background: wrap(`${ui.stringifyColor(ui.setAlpha(baseColor, opacityT * 0.05))} ${progressT * 100}%`) }
+				return { background: wrap(`${color.stringifyColor(color.setAlpha(baseColor, opacityT * 0.05))} ${progressT * 100}%`) }
 			},
 		}
 	}
