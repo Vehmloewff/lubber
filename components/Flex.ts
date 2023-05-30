@@ -75,6 +75,9 @@ export interface FlexItemProps {
 export function FlexItem(props: FlexItemProps) {
 	const { $, render, use } = makeComponent()
 
+	let expansionRate = props.expand ?? false
+	let shrink = props.shrink ?? false
+
 	const generics = use(new SingleChildGenerics())
 	const styler = use(
 		new Styler((style) => {
@@ -84,10 +87,8 @@ export function FlexItem(props: FlexItemProps) {
 		}),
 	)
 
+	generics.setChild(props.child)
 	render(new ElementComponent())
-
-	let expansionRate = props.expand ?? false
-	let shrink = props.shrink ?? false
 
 	function setChild(child: Component | null) {
 		generics.setChild(child)
