@@ -7,7 +7,7 @@ export interface PaddingProps {
 	paddingRight?: number | null
 	paddingBottom?: number | null
 	paddingLeft?: number | null
-	paddingX: number | null
+	paddingX?: number | null
 	paddingY?: number | null
 	padding?: number | null
 }
