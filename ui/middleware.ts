@@ -1,3 +1,5 @@
+import { BareInternalMiddleware, makeComponent } from './component.ts'
+import { storable } from './deps.ts'
 import { Component, ComponentInternals } from './mod.ts'
 
 export interface MakeMiddlewareAttacherParams {
@@ -82,6 +84,23 @@ export function makeElementUser(fn: (element: HTMLElement) => unknown) {
 		}),
 		reuse() {
 			if (stashedElement) fn(stashedElement)
+		},
+	}
+}
+
+export function makeElementGetter() {
+	let stashedElement: HTMLElement | null = null
+
+	const user = makeElementUser((element) => {
+		stashedElement = element
+	})
+
+	return {
+		attach: user.attach,
+		get() {
+			if (!stashedElement) throw new Error('Cannot get element before component has mounted')
+
+			return stashedElement
 		},
 	}
 }
@@ -338,4 +357,38 @@ export function makeDimensionProvider() {
 	}
 
 	return { getWidth, getHeight, attach }
+}
+
+export function makeStorableListener<T>(store: storable.Storable<T>, listener: (value: T) => unknown) {
+	const unsubscribe = store.subscribe(listener)
+
+	const middleware = new LifecycleListeners({
+		onDestroyed() {
+			unsubscribe()
+		},
+	})
+
+	return {
+		attach(internals: ComponentInternals) {
+			return middleware.attach(internals)
+		},
+	}
+}
+
+/** Presents all middleware as bare. If multiple middleware is selected, it will be presented as one. */
+export function presentMiddleware(...middleware: BareInternalMiddleware[]): BareInternalMiddleware {
+	return {
+		attach(internals) {
+			const middlewareToApply = [...middleware]
+
+			while (middlewareToApply.length) {
+				const middleware = middlewareToApply[0]
+				middlewareToApply.shift()
+
+				internals = middleware.attach(internals)
+			}
+
+			return internals
+		},
+	}
 }

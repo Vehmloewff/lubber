@@ -1,6 +1,19 @@
 import { SingleChildBlock } from './SingleChildBlock.ts'
 import { Color, Component, makeComponent, stringifyColor, Styler, toRems } from './deps.ts'
 
+export interface Container extends Component {
+	setColor(newColor: Color): void
+	setBorderRadius(newBorderRadius: number): void
+	setBorder(newColor: Color, newWidth: number): void
+	setBorderStyle(newStyle: string): void
+	setRing(newColor: Color | null, newWidth?: number): void
+	setCursor(newCursor: string): void
+	setFilters(newFilters: string[]): void
+	setBackdropFilters(newBackdropFilters: string[]): void
+	setClip(shouldClip: boolean): void
+	setChild(child: Component | null): void
+}
+
 export interface ContainerProps {
 	child?: Component | null
 	color?: Color

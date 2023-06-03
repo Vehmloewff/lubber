@@ -1,4 +1,4 @@
-import { color, storable } from './deps.ts'
+import { color, LifecycleListeners, makeStorableListener, storable } from './deps.ts'
 
 export interface Theme {
 	primary: color.Color
@@ -66,3 +66,27 @@ export const defaultLightTheme: Theme = {
 }
 
 export const currentTheme = storable.makeStorable(defaultLightTheme)
+
+/**
+ * Subscribes to `currentTheme`, calling `listener` when it is updated. Unsubscribes when the component dismounts
+ *
+ * NOTE: Calls `listener` shortly after function is called */
+export function makeThemeListener(listener: (theme: Theme) => unknown) {
+	return makeStorableListener(currentTheme, listener)
+}
+
+/**
+ * Subscribes/unsubscribes to `currentTheme`, calling `styler` when it is updated. A call to `restyle` will re-call
+ * `styler`.
+ *
+ * NOTE: Calls `styler` once function is called */
+export function makeThemeStyler(styler: (theme: Theme) => unknown) {
+	const listener = makeThemeListener(styler)
+
+	return {
+		attach: listener.attach,
+		restyle() {
+			styler(currentTheme.get())
+		},
+	}
+}

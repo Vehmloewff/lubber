@@ -1,7 +1,5 @@
-import { Container } from './Container.ts'
-import { Label } from './Label.ts'
-import { Padding } from './Padding.ts'
-import { Color, currentTheme, ElementListeners, makeComponent, setAlpha } from './deps.ts'
+import { Color, Container, currentTheme, ElementListeners, Label, makeComponent, Padding, setAlpha } from './deps.ts'
+import { Pressable } from './Pressable.ts'
 
 export interface ButtonProps {
 	onPressed?: VoidFunction | null
@@ -21,37 +19,26 @@ export function Button(text: string | null, props: ButtonProps = {}) {
 				currentlyHovering = isHovering
 				updateStyles()
 			},
-			onPressing(isPressing) {
-				currentlyPressing = isPressing
-				updateStyles()
-			},
 		}),
 	)
 
 	const updateStyles = () => {
 		view.setColor(computeColor())
 		label.setColor(props.primary ? 'white' : 'black')
-
-		if (currentlyPressing) {
-			view.setRing(
-				props.primary ? setAlpha(currentTheme.get().primary, 0.3) : setAlpha(currentTheme.get().foreground, 0.05),
-				3,
-			)
-		} else view.setRing(null)
 	}
 
-	let currentlyPressing = false
 	let currentlyHovering = false
 
 	const label = Label(text, { bold: true })
 	const view = Container({
 		child: Padding({ paddingX: 10, paddingY: 2, child: label }),
-		borderRadius: 4,
 		cursor: 'pointer',
 	})
 
 	updateStyles()
-	render(view)
+	render(
+		Pressable({ child: view }),
+	)
 
 	function computeColor(): Color {
 		if (props.primary) {
