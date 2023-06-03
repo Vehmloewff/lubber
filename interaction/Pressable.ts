@@ -6,12 +6,18 @@ export interface PressableProps {
 	onPressed?(): unknown
 }
 
+/** Creates a pressable area with a focus ring */
 export function Pressable(props: PressableProps) {
 	const { $, render, use } = makeComponent()
 
 	let isFocused = false
 
-	const container = Container({ child: props.child, clip: true, borderRadius: 4 })
+	const container = Container({
+		child: props.child,
+		clip: true,
+		borderRadius: 4,
+		cursor: 'pointer',
+	})
 
 	const focus = () => {
 		isFocused = true

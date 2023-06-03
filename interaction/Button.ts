@@ -32,13 +32,10 @@ export function Button(text: string | null, props: ButtonProps = {}) {
 	const label = Label(text, { bold: true })
 	const view = Container({
 		child: Padding({ paddingX: 10, paddingY: 2, child: label }),
-		cursor: 'pointer',
 	})
 
 	updateStyles()
-	render(
-		Pressable({ child: view }),
-	)
+	render(Pressable({ child: view }))
 
 	function computeColor(): Color {
 		if (props.primary) {

@@ -80,12 +80,16 @@ export function Container(props: ContainerProps = {}) {
 	let borderStyle = props.borderStyle ?? 'solid'
 	let ringColor = props.ringColor ?? null
 	let ringWidth = props.ringWidth ?? 0
-	let cursor = props.cursor ?? 'default'
+	let cursor = props.cursor ?? 'inherit'
 	let filters = props.filters ?? []
 	let backdropFilters = props.backdropFilters ?? []
 	let clip = props.clip ?? false
 
 	const transitions = new Map<string, number>()
+
+	transitions.set('color', 300)
+	transitions.set('background', 300)
+	transitions.set('box-shadow', 300)
 
 	function setColor(newColor: Color) {
 		color = newColor

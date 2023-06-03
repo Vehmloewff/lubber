@@ -1,3 +1,4 @@
+import { Shade } from './Shade.ts'
 import { L } from './deps.ts'
 
 export interface EnvelopeParams {
@@ -30,38 +31,44 @@ export function EnvelopePreview(params: EnvelopeParams) {
 
 	const imageComponent = L.Image(params.image, { fit: 'cover' })
 
-	const container = L.Container({
-		borderRadius: 10,
-		clip: true,
-		child: L.Stack({
-			children: [
-				L.StackItem({ child: imageComponent, inset: 0 }),
-				L.StackItem({
-					inset: 0,
-					child: L.Container({
-						color: L.setAlpha(L.currentTheme.get().foreground, 0.5),
-						child: L.Padding({
-							paddingX: 15,
-							child: L.Row({
-								gap: 10,
-								align: 'center',
-								children: [
-									L.FlexItem({
-										expand: true,
-										child: nameLabel,
-									}),
-									balanceLabel,
-								],
-							}),
-						}),
+	const contentShade = Shade({
+		reverse: true,
+		alpha: 0.5,
+		child: L.Padding({
+			paddingX: 15,
+			child: L.Row({
+				gap: 10,
+				align: 'center',
+				children: [
+					L.FlexItem({
+						expand: true,
+						child: nameLabel,
 					}),
-				}),
-			],
+					balanceLabel,
+				],
+			}),
 		}),
 	})
 
 	render(
-		L.SizedBox({ height: 100, child: container }),
+		L.SizedBox({
+			height: 100,
+			child: L.Pressable({
+				onPressing(isPressing) {
+					if (isPressing) contentShade.setAlpha(0.7)
+					else contentShade.setAlpha(0.5)
+				},
+				child: L.Stack({
+					children: [
+						L.StackItem({ child: imageComponent, inset: 0 }),
+						L.StackItem({
+							inset: 0,
+							child: contentShade,
+						}),
+					],
+				}),
+			}),
+		}),
 	)
 
 	function setName() {}
