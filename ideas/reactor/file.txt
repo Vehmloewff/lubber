@@ -1,0 +1,11 @@
+use name #string
+let text #string = 'Hello'
+
+---
+
+core/Container {
+	color: 'red'
+	child: core/Label {
+		text: 'Hello ' + name
+	}
+}
